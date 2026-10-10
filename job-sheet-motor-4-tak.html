@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Job Sheet – Siklus Kerja Motor 4 Tak</title>
+<style>
+  :root{
+    --ink:#111827; --mut:#4b5563; --line:#cbd5e1; --hdr:#0f172a; --acc:#f97316; --muted:#6b7280;
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family:'Segoe UI', Arial, sans-serif; color:var(--ink); margin:0; padding:24px;
+    background:#eef2f7; line-height:1.55;
+  }
+  .sheet{
+    max-width:210mm; margin:0 auto; background:#fff; padding:14mm 16mm; border-radius:10px;
+    box-shadow:0 6px 24px rgba(0,0,0,.12);
+  }
+  /* tombol cetak (sembunyi saat print) */
+  .noPrint{max-width:210mm; margin:0 auto 12px; text-align:right}
+  .noPrint button{
+    background:var(--acc); color:#fff; border:none; padding:10px 18px; border-radius:8px;
+    font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,.2);
+  }
+  header{border:2px solid var(--hdr); border-radius:8px; overflow:hidden; margin-bottom:16px}
+  .kop{background:var(--hdr); color:#fff; padding:10px 16px; display:flex; justify-content:space-between; align-items:center}
+  .kop .school{font-size:15px; font-weight:800; letter-spacing:.5px}
+  .kop .meta{font-size:11px; color:#cbd5e1}
+  .kicker{background:var(--acc); color:#fff; padding:6px 16px; font-size:12px; font-weight:700; letter-spacing:2px; text-transform:uppercase}
+  h1{font-size:20px; margin:6px 0}
+  h2{font-size:13px; text-transform:uppercase; letter-spacing:1px; color:#fff; background:var(--hdr);
+     padding:5px 10px; border-radius:6px; margin:20px 0 10px}
+  h3{font-size:12px; margin:8px 0 4px; color:var(--hdr)}
+  p{margin:5px 0; font-size:13px}
+  table{width:100%; border-collapse:collapse; margin:8px 0; font-size:12.5px}
+  th, td{border:1px solid var(--line); padding:7px 8px; text-align:left; vertical-align:top}
+  th{background:#f1f5f9; font-weight:700}
+  td.sel{background:#f8fafc}
+  .ident{display:grid; grid-template-columns:1fr 1fr; gap:4px 28px; margin:6px 0; font-size:13px}
+  .ident b{font-weight:700}
+  .baris{margin:3px 0}
+  .tujuan{font-size:13px}
+  .tujuan li{margin:3px 0}
+  .k3{background:#fef9ee; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; font-size:12.5px}
+  .k3 b{color:#b45309}
+  .langkah li, .tanya li{margin:6px 0; font-size:13px}
+  .ck{display:inline-block; width:13px; height:13px; border:1.5px solid #64748b; border-radius:3px; margin-right:8px; vertical-align:-2px}
+  .tabular{font-size:13px}
+  .catat{min-height:34px; border-bottom:1px dashed #94a3b8; margin:2px 0 10px}
+  .line{display:block; border-bottom:1px solid #94a3b8; height:22px; margin:2px 0 8px}
+  .note{font-size:11.5px; color:var(--mut); font-style:italic}
+  .ttd{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:26px; font-size:12.5px}
+  .ttd h3{margin-bottom:40px; text-align:center}
+  .ttd p{margin:2px 0; text-align:center}
+  .center{text-align:center}
+  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:0 24px}
+  .ph{font-size:12px; color:var(--muted)}
+  .bar{height:3px; margin:26px 0 6px; background:#e2e8f0; border-radius:2px; overflow:hidden}
+  .bar i{display:block; height:100%; background:var(--acc)}
+  .quiz{nargin:0}
+  @media print{
+    body{background:#fff; padding:0}
+    .sheet{box-shadow:none; border-radius:0; padding:8mm 10mm; max-width:none}
+    .noPrint{display:none}
+    h2{background:var(--hdr); -webkit-print-color-adjust:exact; print-color-adjust:exact}
+    .k3{background:#fef9ee; -webkit-print-color-adjust:exact; -webkit-print-color-adjust:exact}
+    header,.k3{break-inside:avoid}
+    .ttd,.tabel-group{break-inside:avoid}
+    @page{margin:10mm}
+  }
+</style>
+</head>
+<body>
+
+<div class="noPrint"><button onclick="window.print()">🖨 Cetak Job Sheet</button></div>
+
+<div class="sheet">
+
+<header>
+  <div class="kop">
+    <div>
+      <div class="school">LEMBAR KERJA SISWA (JOB SHEET)</div>
+      <div class="meta">SMK …………………………… &nbsp;|&nbsp; Teknik Kendaraan Ringan / Teknik & Bisnis Sepeda Motor</div>
+    </div>
+    <div class="meta">K13 / Kurikulum Merdeka</div>
+  </div>
+  <div class="kicker">Siklus Kerja Motor 4 Tak : Hisap – Kompresi – Usaha – Buang &nbsp;·&nbsp; 720&#176;</div>
+</header>
+
+<h1>Siklus Kerja Motor Bakar 4 Tak</h1>
+<p class="ph">Menggunakan media pembelajaran interaktif <b>index.html</b> (simulasi 3D Three.js) yang berisi: simulasi bergerak, penjelasan komponen, materi siklus, dan evaluasi.</p>
+
+<h2>I. Identitas</h2>
+<div class="ident">
+  <div><b>Nama Siswa :</b> ……………………………………………………………………</div>
+  <div><b>No. Absen :</b> …………………</div>
+  <div><b>Kelas :</b> ………………………………… &nbsp;&nbsp;<b>Kelompok :</b> …………</div>
+  <div><b>Tanggal :</b> ………………………… &nbsp;&nbsp;<b>Jam :</b> ………………</div>
+</div>
+
+<h2>II. Tujuan Pembelajaran</h2>
+<ul class="tujuan">
+  <li>3.10 &nbsp;Menganalisis prinsip kerja motor bensin 4 langkah (hisap–kompresi–usaha–buang).</li>
+  <li>4.10 &nbsp;Menjelaskan dan mempresentasikan siklus kerja motor 4 tak menggunakan media simulasi.</li>
+  <li>TP-1 &nbsp;Peserta didik dapat mengidentifikasi 4 langkah kerja dan urutan putaran poros engkol (720&#176;).</li>
+  <li>TP-2 &nbsp;Peserta didik dapat menghubungkan pergerakan piston, katup, dan busi pada tiap langkah.</li>
+  <li>TP-3 &nbsp;Peserta didik dapat menyebutkan fungsi setiap komponen yang diamati (piston, ring, batang torak, poros engkol, katup, busi, camshaft, roda gaya).</li>
+</ul>
+
+<h2>III. Alat dan Sumber Belajar</h2>
+<table>
+  <tr><th style="width:14%">No</th><th style="width:42%">Nama Alat / Media</th><th>Fungsi / Keterangan</th></tr>
+  <tr><td>1</td><td>Komputer / Laptop / HP</td><td>Menjalankan media simulasi 3D</td></tr>
+  <tr><td>2</td><td>Browser (Chrome / Edge / Firefox) + internet</td><td>Membuka <i>index.html</i> dan memuat pustaka Three.js (CDN)</td></tr>
+  <tr><td>3</td><td>Media interaktif <b>index.html</b></td><td>Simulasi siklus 4 tak, komponen &amp; kuis</td></tr>
+  <tr><td>4</td><td>Alat tulis (pulpen, pensil)</td><td>Mengisi lembar kerja ini</td></tr>
+</table>
+
+<h2>IV. Keselamatan dan Kesehatan Kerja (K3)</h2>
+<div class="k3">
+  <p><b>&#9888; Perhatian sebelum praktik :</b></p>
+  <ul style="margin:4px 0 0; padding-left:20px">
+    <li>Bacalah setiap langkah kerja dengan teliti sebelum mengerjakan.</li>
+    <li>Gunakan perangkat sesuai petunjuk; jangan memaksa perangkat keras (jangan mengguncang layar).</li>
+    <li>Simpan file media pada lokasi yang mudah dicari; jangan mengedit isi program.</li>
+    <li>Kerjakan secara berkelompok/berpasangan dan jaga ketertiban.</li>
+    <li>Apabila media tidak tampil (WebGL tidak tersedia), laporkan ke guru pengawas.</li>
+  </ul>
+</div>
+
+<h2>V. Langkah Kerja</h2>
+<ol class="langkah">
+  <li><span class="ck"></span>Nyalakan komputer/laptop, pastikan terhubung ke internet, lalu buka <b>index.html</b> pada browser.</li>
+  <li><span class="ck"></span>Amati tampilan awal. Terdapat 4 tab: <b>Simulasi 3D · Komponen · Materi Siklus · Evaluasi</b>.</li>
+  <li><span class="ck"></span>Pada tab <b>Simulasi 3D</b>, putar model dengan menekan-drag kiri mouse, zoom dengan scroll, dan klik komponen untuk melihat fungsinya.</li>
+  <li><span class="ck"></span>Tekan tombol <b>&#9654; Jalankan / &#9208; Jeda</b> dan perhatikan poros engkol berputar, piston naik-turun, serta katup membuka-menutup.</li>
+  <li><span class="ck"></span>Klik chip langkah <b>1·Hisap (0&#176;) → 2·Kompresi (180&#176;) → 3·Usaha (360&#176;) → 4·Buang (540&#176;)</b> untuk melompat ke tiap fase.</li>
+  <li><span class="ck"></span>Catat pada tabel (bagian VII) : posisi piston (TMA/TMB), kondisi katup, dan kejadian tiap langkah.</li>
+  <li><span class="ck"></span>Klik tiap komponen (piston, ring, batang torak, poros engkol, katup, busi, camshaft, roda gaya, blok, kepala silinder) dan tuliskan fungsi singkatnya.</li>
+  <li><span class="ck"></span>Buka tab <b>Materi Siklus</b>, pelajari uraian langkah, diagram waktu katup, dan rumus siklus 720&#176;.</li>
+  <li><span class="ck"></span>Kerjakan tab <b>Evaluasi</b> (kuis 8 soal) dan catatlah skor yang diperoleh pada bagian VIII.</li>
+  <li><span class="ck"></span>Rapikan kembali perangkat dan laporkan hasil pekerjaan kepada guru.</li>
+</ol>
+
+<h2>VI. Data Praktik / Informasi Pendukung</h2>
+<table class="tabular">
+  <tr><th style="width:26%">Istilah</th><th>Pengertian</th></tr>
+  <tr><td>TMA (Titik Mati Atas)</td><td>Posisi piston paling atas = volume ruang bakar terkecil</td></tr>
+  <tr><td>TMB (Titik Mati Bawah)</td><td>Posisi piston paling bawah = volume silinder terbesar</td></tr>
+  <tr><td>1 siklus 4 tak</td><td>4 langkah piston = 2 putaran poros engkol = 720&#176;</td></tr>
+  <tr><td>Poros engkol / Camshaft</td><td>Poros engkol mengubah gerak naik-turun piston menjadi putaran; camshaft membuka katup setengah kecepatannya</td></tr>
+</table>
+
+<h2>VII. Hasil Pengamatan Siklus Kerja Motor 4 Tak</h2>
+<div class="tabel-group">
+<table>
+  <tr>
+    <th style="width:3%">No</th>
+    <th style="width:13%">Langkah</th>
+    <th style="width:9%">Sudut</th>
+    <th style="width:16%">Gerak Piston</th>
+    <th style="width:14%">Katup Isap</th>
+    <th style="width:14%">Katup Buang</th>
+    <th>Kejadian / Penyebab Pergerakan</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>Hisap</td>
+    <td>0&#176; – 180&#176;</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………………<br>…………………………………</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td>Kompresi</td>
+    <td>180&#176; – 360&#176;</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………………<br>…………………………………</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td>Usaha</td>
+    <td>360&#176; – 540&#176;</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………………<br>…………………………………</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td>Buang</td>
+    <td>540&#176; – 720&#176;</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………</td>
+    <td>…………………………………<br>…………………………………</td>
+  </tr>
+</table>
+</div>
+
+<h3>2. Fungsi Komponen (isi setelah mengklik komponen pada simulasi 3D)</h3>
+<div class="grid2 tabel-group">
+<table>
+  <tr><th>Komponen</th><th>Fungsi Singkat</th></tr>
+  <tr><td>Piston + Ring</td><td>&nbsp;<br>&nbsp;</td></tr>
+  <tr><td>Batang Torak</td><td>&nbsp;<br>&nbsp;</td></tr>
+  <tr><td>Poros Engkol</td><td>&nbsp;<br>&nbsp;</td></tr>
+  <tr><td>Katup Isap &amp; Buang</td><td>&nbsp;<br>&nbsp;</td></tr>
+</table>
+<table>
+  <tr><th>Komponen</th><th>Fungsi Singkat</th></tr>
+  <tr><td>Busi</td><td>&nbsp;<br>&nbsp;</td></tr>
+  <tr><td>Camshaft/Noken As</td><td>&nbsp;<br>&nbsp;</td></tr>
+  <tr><td>Roda Gaya</td><td>&nbsp;<br>&nbsp;</td></tr>
+  <tr><td>Blok &amp; Kepala Silinder</td><td>&nbsp;<br>&nbsp;</td></tr>
+</table>
+</div>
+
+<h2>VIII. Hasil Evaluasi Media</h2>
+<table>
+  <tr><th style="width:60%">Aspek</th><th style="width:20%">Skor yang Diperoleh</th><th>Keterangan</th></tr>
+  <tr><td>Kuis Evaluasi (8 soal)</td><td style="text-align:center">… / 8</td><td>Skor diperlihatkan pada tab Evaluasi</td></tr>
+  <tr><td>Ketepatan urutan langkah dalam pengamatan tabel VII</td><td style="text-align:center">…</td><td></td></tr>
+</table>
+
+<h2>IX. Pertanyaan / Tugas Analisis</h2>
+<ol class="tanya">
+  <li>Mengapa pada langkah <b>kompresi</b> dan <b>usaha</b> kedua katup tertutup rapat? Waktu 1 siklus 4 tak memerlukan <b>berapa kali putaran poros engkol</b>?</li>
+  <li>Dari mana tenaga penggerak yang mendorong piston pada langkah <b>usaha</b> berasal?  Apa peran <b>busi</b> pada awal langkah usaha?</li>
+  <li>Jika ring piston aus/bocor, apa yang terjadi pada tekanan kompresi dan tenaga motor?</li>
+  <li>Gambarkan atau isi diagram siklus berikut (tandai arah gerak piston TMA/TMB) :</li>
+</ol>
+<div style="border:1px dashed #94a3b8; border-radius:8px; height:120px; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:12px">(Tempat menggambar diagram siklus 4 tak / skedul katup 0&#176;–720&#176;)</div>
+
+<h2>X. Penilaian</h2>
+<table>
+  <tr><th style="width:4%">No</th><th>Aspek / Kriteria</th><th style="width:12%">Skor Maks</th><th style="width:12%">Skor</th></tr>
+  <tr><td>1</td><td>Sikap (tata tertib, teliti, kejujuran, kerjasama)</td><td class="center">20</td><td></td></tr>
+  <tr><td>2</td><td>Pengetahuan (jawaban pertanyaan IX, benar &amp; lengkap)</td><td class="center">30</td><td></td></tr>
+  <tr><td>3</td><td>Keterampilan (tabel pengamatan VII dan fungsi komponen benar)</td><td class="center">30</td><td></td></tr>
+  <tr><td>4</td><td>Hasil evaluasi media (bagian VIII)</td><td class="center">20</td><td></td></tr>
+  <tr><td colspan="2"><b>Jumlah</b></td><td class="center"><b>100</b></td><td></td></tr>
+</table>
+<p class="note">Predikat : 90–100 (Sangat Baik) · 80–89 (Baik) · 70–79 (Cukup) · &lt;70 (Perlu Bimbingan).</p>
+
+<div class="ttd">
+  <div class="center">
+    <h3>Mengetahui<br>Guru Mata Pelajaran</h3>
+    <p>(………………………………………)</p>
+    <p>NIP. ………………………………</p>
+  </div>
+  <div class="center">
+    <h3>Peserta Didik</h3>
+    <p>(………………………………………)</p>
+    <p>NIS. ………………………………</p>
+  </div>
+  <div class="center">
+    <h3>Orang Tua / Wali</h3>
+    <p>(………………………………………)</p>
+    <p>&nbsp;</p>
+  </div>
+</div>
+
+<div class="bar"><i style="width:100%"></i></div>
+<p class="ph center">“Satu siklus motor 4 tak = 4 langkah piston = 2 putaran poros engkol = 720&#176;” &nbsp;·&nbsp; Job Sheet Media Pembelajaran Motor 4 Tak</p>
+
+</div>
+</body>
+</html>

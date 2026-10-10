@@ -1,0 +1,3481 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Modul Ajar Interaktif — Siklus Kerja Motor 4 Tak</title>
+<style>
+  :root{
+    --bg:#0f172a; --panel:#1e293b; --panel2:#273449; --line:#334155;
+    --ink:#e2e8f0; --mut:#94a3b8; --acc:#f97316; --acc2:#38bdf8; --ok:#4ade80; --err:#f87171;
+    --card:#243247;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--ink); font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; line-height:1.6}
+
+  header.top{position:sticky; top:0; z-index:50; background:rgba(15,23,42,.92); backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line); padding:.6rem 1.2rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap}
+  .logo{display:flex; align-items:center; gap:.6rem; font-weight:700; font-size:1.05rem; letter-spacing:.3px}
+  .logo .badge{background:linear-gradient(135deg,var(--acc),#fb923c); color:#111; border-radius:8px; padding:.2rem .5rem; font-weight:800}
+  nav.tabs{display:flex; gap:.4rem; flex-wrap:wrap; margin-left:auto}
+  button.tab{background:transparent; border:1px solid var(--line); color:var(--mut); padding:.45rem .9rem; border-radius:9px;
+    cursor:pointer; font-weight:600; font-size:.88rem; transition:.18s}
+  button.tab:hover{color:var(--ink); border-color:#475569}
+  button.tab.aktif{background:var(--acc); border-color:var(--acc); color:#111}
+
+  main{max-width:1500px; margin:0 auto; padding:1.2rem 1.2rem 3rem}
+  section.blok{display:none}
+  section.blok.muncul{display:block}
+  .kicker{color:var(--acc2); font-size:.78rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase}
+  h1{font-size:1.9rem; line-height:1.2; margin-top:.3rem}
+  .intro{color:var(--mut); max-width:850px; margin:.6rem 0 1.2rem}
+
+  /* ---------- LAYOUT SIMULASI ---------- */
+  .simLayout{display:flex; gap:1rem; align-items:stretch; flex-wrap:wrap}
+  #infoCol{flex:0 0 380px; display:flex; flex-direction:column; gap:.9rem}
+  #viewCol{flex:1 1 460px; min-width:340px; display:flex; flex-direction:column; gap:.7rem}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:1rem}
+  .card h3{font-size:.95rem; margin-bottom:.5rem; display:flex; align-items:center; gap:.5rem}
+  .muted{color:var(--mut); font-size:.85rem}
+
+  /* stroke panel */
+  #strokePanel{border-left:5px solid var(--acc); position:relative}
+  .stSub{color:var(--mut); font-size:.8rem; font-weight:700; letter-spacing:1px}
+  .stTitle{font-size:1.35rem; font-weight:800; margin:.1rem 0 .4rem; line-height:1.15}
+  .stDesc{font-size:.88rem; color:#cbd5e1}
+  .stMeta{display:flex; gap:.9rem; flex-wrap:wrap; margin-top:.6rem; align-items:center}
+  .chipMini{background:var(--panel2); border:1px solid var(--line); border-radius:99px; padding:.2rem .7rem; font-size:.78rem; color:var(--ink)}
+  #angTrack{height:8px; background:var(--panel2); border-radius:99px; overflow:hidden; margin-top:.7rem}
+  #angBar{height:100%; width:0%; background:linear-gradient(90deg,var(--acc2),var(--acc)); transition:width .06s linear; border-radius:99px}
+  .topline{display:flex; justify-content:space-between; font-size:.75rem; color:var(--mut)}
+
+  .phaseChips{display:grid; grid-template-columns:1fr 1fr; gap:.5rem}
+  button.chip{text-align:left; background:var(--panel2); border:1px solid var(--line); color:var(--mut); border-radius:10px;
+    padding:.45rem .7rem; cursor:pointer; font-size:.8rem; font-weight:700; transition:.15s; display:flex; gap:.45rem; align-items:center}
+  button.chip .dot{width:9px; height:9px; border-radius:50%; display:inline-block; flex:0 0 auto}
+  button.chip:hover{border-color:#64748b; color:var(--ink)}
+  button.chip.on{color:#111; border-color:transparent}
+  button.chip.on .dot{background:#111}
+  .q3dModeBtn.sel{background:var(--acc); border-color:var(--acc); color:#111}
+  .q3dOpt{background:var(--panel2); border:1px solid var(--line); color:var(--ink); border-radius:9px; padding:.45rem .6rem; cursor:pointer; font-size:.82rem; transition:.15s}
+  .q3dOpt:hover{border-color:var(--acc2); color:var(--ink)}
+  .q3dOpt.benar{border-color:var(--ok); background:rgba(74,222,128,.12); color:var(--ink)}
+  .q3dOpt.salah{border-color:var(--err); background:rgba(248,113,113,.12); color:var(--ink)}
+
+  .ctlRow{display:flex; gap:.5rem; align-items:center; flex-wrap:wrap}
+  button.btn{background:var(--acc); border:none; color:#111; font-weight:700; padding:.55rem 1rem; border-radius:10px; cursor:pointer; font-size:.85rem; transition:.15s}
+  button.btn.sb{background:var(--panel2); color:var(--ink); border:1px solid var(--line)}
+  button.btn:hover{filter:brightness(1.12)}
+  label.lbl{font-size:.78rem; color:var(--mut); display:flex; align-items:center; gap:.4rem}
+  input[type=range]{accent-color:var(--acc)}
+  input[type=checkbox]{accent-color:var(--acc)}
+
+  #compList{display:flex; flex-wrap:wrap; gap:.4rem}
+  #compList button{background:var(--panel2); border:1px solid var(--line); color:var(--mut); border-radius:99px; padding:.22rem .6rem; font-size:.74rem; cursor:pointer}
+  #compList button:hover{color:var(--ink); border-color:#64748b}
+  #compList button.sel{background:var(--acc); color:#111; border-color:var(--acc)}
+
+  /* viewer */
+  #viewWrap{position:relative; border-radius:16px; overflow:hidden; border:1px solid var(--line);
+    background:radial-gradient(1200px 600px at 30% 20%, #1e2c44, #0b1220); height:min(78vh, 760px); min-height:460px}
+  #viewWrap:fullscreen, #viewWrap:-webkit-full-screen, #viewWrap:-moz-full-screen{width:100vw; height:100vh; border-radius:0; border:none}
+  #view3d{position:absolute; inset:0}
+  #view3d canvas{display:block}
+
+  /* ---------- HUD & overlay kanvas 3D ---------- */
+  /* lapisan kontras tipis agar overlay selalu terbaca */
+  #viewWrap::before{content:''; position:absolute; inset:0; z-index:6; pointer-events:none;
+    background:linear-gradient(180deg, rgba(5,10,22,.4) 0%, rgba(5,10,22,0) 9%, rgba(5,10,22,0) 80%, rgba(5,10,22,.4) 100%)}
+  .hintBar{position:absolute; bottom:.55rem; left:50%; transform:translateX(-50%); z-index:8;
+    background:rgba(11,18,32,.78); border:1px solid rgba(148,163,184,.25); color:#cbd5e1; font-size:.72rem;
+    padding:.3rem .95rem; border-radius:99px; white-space:nowrap; backdrop-filter:blur(8px)}
+  .hintBar b{color:#e2e8f0}
+  .fsFab{position:absolute; bottom:.55rem; right:.55rem; z-index:10; width:2.35rem; height:2.35rem; border-radius:11px;
+    background:rgba(15,23,42,.85); border:1px solid var(--line); color:#e2e8f0; font-size:1.05rem; cursor:pointer;
+    transition:.15s; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  .fsFab:hover{background:#1e293b; border-color:#64748b; transform:translateY(-1px)}
+
+  /* HUD langkah (kiri atas) */
+  #strokeOverlay{position:absolute; top:.65rem; left:.65rem; pointer-events:none; z-index:7;
+    background:rgba(10,17,32,.82); border:1px solid rgba(148,163,184,.22); border-left:4px solid var(--acc);
+    border-radius:12px; padding:.55rem .9rem; max-width:300px; backdrop-filter:blur(8px)}
+  #strokeOverlay .big{font-size:1.15rem; font-weight:800; color:#fff; line-height:1.2}
+  #strokeOverlay .small{font-size:.73rem; color:#94a3b8}
+  #strokeOverlay .small:last-child{margin-top:.35rem; padding-top:.4rem; border-top:1px dashed rgba(148,163,184,.25); color:#cbd5e1}
+
+  /* pilih langkah (kanan atas) */
+  .phaseBox{position:absolute; top:.65rem; right:.65rem; z-index:8; background:rgba(12,19,35,.85);
+    border:1px solid rgba(148,163,184,.22); border-right:4px solid var(--acc); border-radius:12px; padding:.55rem .65rem;
+    width:min(210px, 32%); box-shadow:0 10px 30px rgba(0,0,0,.45); backdrop-filter:blur(8px)}
+  .phaseBoxTtl{font-size:.6rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:#94a3b8; margin-bottom:.35rem}
+  .phaseBox button.chip{font-size:.72rem; padding:.34rem .55rem}
+
+  /* indikator sudut (sejajar lebar kotak langkah) */
+  #angleMini{position:absolute; top:7.2rem; right:.65rem; z-index:7; background:rgba(12,19,35,.82);
+    border:1px solid rgba(148,163,184,.22); border-radius:12px; padding:.35rem .65rem; font-size:.72rem;
+    color:#94a3b8; pointer-events:none; text-align:center; backdrop-filter:blur(8px); width:min(210px, 32%)}
+  #angleMini b{color:#e2e8f0; font-size:.92rem}
+
+  /* panel kontrol (kiri, tengah tegak) */
+  .simCtl{position:absolute; left:.65rem; top:50%; transform:translateY(-50%); z-index:8; display:flex;
+    flex-direction:column; gap:.8rem; width:min(275px, 42%); max-height:calc(100% - 1.3rem); overflow:auto;
+    background:rgba(12,19,35,.88); border:1px solid rgba(148,163,184,.22); border-left:4px solid var(--acc);
+    border-radius:14px; padding:.75rem .9rem; box-shadow:0 12px 34px rgba(0,0,0,.5); backdrop-filter:blur(8px);
+    scrollbar-width:thin; scrollbar-color:rgba(148,163,184,.35) transparent}
+  .simCtl .ctlRow{row-gap:.4rem; column-gap:.4rem; display:flex; flex-wrap:wrap}
+  .simCtl .learnBox{margin-top:.25rem}
+  .simCtl input[type=range]{width:124px}
+  .simGrp .simLbl{display:block; font-size:.58rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:#94a3b8; margin-bottom:.35rem}
+  .simGrp + .simGrp{margin-top:.35rem; border-top:1px solid rgba(148,163,184,.13); padding-top:.6rem}
+
+  /* ---- fullscreen : bar kontrol bawah ---- */
+  #viewWrap:fullscreen .simCtl, #viewWrap:-webkit-full-screen .simCtl, #viewWrap:-moz-full-screen .simCtl{
+    display:flex; left:50%; transform:translateX(-50%); top:auto; bottom:.55rem; width:auto; max-width:calc(100% - 1.1rem);
+    flex-direction:row; flex-wrap:wrap; justify-content:center; align-items:flex-end; gap:.55rem; padding:.5rem .75rem;
+    border-top:3px solid var(--acc); border-left:1px solid rgba(148,163,184,.22); border-radius:12px;
+    background:rgba(10,16,30,.86); backdrop-filter:blur(8px); max-height:calc(100% - 1.1rem); overflow:auto}
+  #viewWrap:fullscreen .phaseBox, #viewWrap:-webkit-full-screen .phaseBox, #viewWrap:-moz-full-screen .phaseBox{
+    display:block}
+  #viewWrap:fullscreen #angleMini, #viewWrap:-webkit-full-screen #angleMini, #viewWrap:-moz-full-screen #angleMini{
+    top:7.2rem; right:.9rem}
+  #viewWrap:fullscreen .simGrp + .simGrp, #viewWrap:-webkit-full-screen .simGrp + .simGrp,
+  #viewWrap:-moz-full-screen .simGrp + .simGrp{margin-top:0; padding-top:0; border-top:none;
+    border-left:1px solid rgba(148,163,184,.22); padding-left:.7rem}
+  #viewWrap:fullscreen .simGrp:last-child, #viewWrap:-webkit-full-screen .simGrp:last-child,
+  #viewWrap:-moz-full-screen .simGrp:last-child{border-left:none}
+  #viewWrap:fullscreen .lbl, #viewWrap:-webkit-full-screen .lbl,
+  #viewWrap:-moz-full-screen .lbl{display:flex; align-items:center; gap:.3rem}
+  #viewWrap:fullscreen .simGrp .simLbl, #viewWrap:-webkit-full-screen .simGrp .simLbl,
+  #viewWrap:-moz-full-screen .simGrp .simLbl{font-size:.55rem; margin-bottom:.25rem}
+  #viewWrap:fullscreen button.btn, #viewWrap:-webkit-full-screen button.btn,
+  #viewWrap:-moz-full-screen button.btn{font-size:.71rem; padding:.3rem .55rem; border-radius:8px}
+  #viewWrap:fullscreen label.lbl, #viewWrap:-webkit-full-screen label.lbl,
+  #viewWrap:-moz-full-screen label.lbl{font-size:.66rem; gap:.28rem}
+  #viewWrap:fullscreen input[type=range], #viewWrap:-webkit-full-screen input[type=range],
+  #viewWrap:-moz-full-screen input[type=range]{width:80px; height:13px}
+  #viewWrap:fullscreen .ctlRow, #viewWrap:-webkit-full-screen .ctlRow,
+  #viewWrap:-moz-full-screen .ctlRow{gap:.26rem}
+  #viewWrap:fullscreen .phaseChips, #viewWrap:-webkit-full-screen .phaseChips,
+  #viewWrap:-moz-full-screen .phaseChips{grid-template-columns:auto auto; gap:.32rem}
+  #viewWrap:fullscreen button.chip, #viewWrap:-webkit-full-screen button.chip,
+  #viewWrap:-moz-full-screen button.chip{font-size:.64rem; padding:.26rem .48rem; border-radius:7px; gap:.3rem}
+  #viewWrap:fullscreen button.chip .dot, #viewWrap:-webkit-full-screen button.chip .dot,
+  #viewWrap:-moz-full-screen button.chip .dot{width:7px; height:7px}
+  #viewWrap:fullscreen .learnBox, #viewWrap:-webkit-full-screen .learnBox,
+  #viewWrap:-moz-full-screen .learnBox{position:absolute; bottom:6.4rem; left:50%; transform:translateX(-50%);
+    width:min(560px, calc(100% - 2rem))}
+  #viewWrap:fullscreen .hintBar, #viewWrap:-webkit-full-screen .hintBar, #viewWrap:-moz-full-screen .hintBar{display:none}
+  #viewWrap:fullscreen .fsFab, #viewWrap:-webkit-full-screen .fsFab, #viewWrap:-moz-full-screen .fsFab{
+    bottom:7rem; right:.55rem; background:rgba(13,21,38,.85)}
+  #infoTag{position:absolute; bottom:3.6rem; left:50%; transform:translateX(-50%); z-index:12;
+    width:min(440px, calc(100% - 2rem)); display:none;
+    background:linear-gradient(165deg, rgba(18,28,48,.97), rgba(10,16,30,.97)); border:1px solid #f97316;
+    border-left:5px solid #f97316; border-radius:14px; padding:.75rem 1rem;
+    box-shadow:0 12px 40px rgba(0,0,0,.55); pointer-events:none;
+    font-family:'Segoe UI', system-ui, Arial, sans-serif}
+  #viewWrap:fullscreen #infoTag, #viewWrap:-webkit-full-screen #infoTag, #viewWrap:-moz-full-screen #infoTag{
+    top:9.6rem; left:.9rem; bottom:auto; transform:none; width:min(300px, calc(100% - 2rem))}
+  #infoTag .itTop{display:flex; align-items:center; gap:.5rem; margin-bottom:.4rem}
+  #infoTag .itIco{width:1.7rem; height:1.7rem; border-radius:50%; background:rgba(249,115,22,.18);
+    display:flex; align-items:center; justify-content:center; font-size:1rem; flex:0 0 auto;
+    border:1px solid rgba(249,115,22,.35)}
+  #infoTag .itName{font-size:.94rem; font-weight:800; color:#fff; line-height:1.25}
+  #infoTag .itEn{display:block; font-size:.7rem; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:#f97316}
+  #infoTag .itFn{font-size:.78rem; line-height:1.55; color:#cbd5e1; text-align:left; border-top:1px solid rgba(148,163,184,.18); padding-top:.4rem}
+  #webglMsg{position:absolute; inset:0; display:none; align-items:center; justify-content:center; text-align:center; padding:2rem;
+    background:#0b1220; color:var(--mut); font-size:.9rem}
+  #webglMsg b{color:var(--err)}
+
+  /* ---------- KOMPONEN ---------- */
+  .subhead{color:var(--mut); font-size:.9rem; margin-bottom:1rem; max-width:900px}
+  .compGrid{display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:.9rem}
+  .compCard{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1rem; cursor:pointer; transition:.15s}
+  .compCard:hover{border-color:var(--acc); transform:translateY(-2px)}
+  .compCard .ico{font-size:1.6rem; line-height:1}
+  .compCard h4{font-size:.95rem; margin:.4rem 0 0}
+  .compCard .en{color:var(--acc2); font-size:.72rem; font-weight:600; letter-spacing:.5px; text-transform:uppercase}
+  .compCard p{font-size:.8rem; color:var(--mut); margin-top:.35rem}
+  .compCard .drag{color:var(--acc); font-size:11px; opacity:0; margin-top:.4rem; font-weight:700}
+  .compCard:hover .drag{opacity:1}
+  #compDetail{display:none; margin-top:1rem}
+  #compDetail .dtTitle{font-size:1.1rem; font-weight:800}
+  #compDetail .dtBody{color:#cbd5e1; font-size:.88rem}
+
+  /* ---------- KUIS ---------- */
+  .quizQ{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:1rem 1.1rem; margin-bottom:1rem}
+  .quizQ .qn{font-weight:700; font-size:.95rem; margin-bottom:.5rem}
+  .opt{display:block; padding:.4rem .6rem; border:1px solid var(--line); border-radius:9px; margin:.25rem 0; cursor:pointer; font-size:.85rem}
+  .opt:hover{background:var(--panel2)}
+  .opt input{margin-right:.5rem}
+  .opt.benar{border-color:var(--ok); background:rgba(74,222,128,.12)}
+  .opt.salah{border-color:var(--err); background:rgba(248,113,113,.12)}
+  #skor{font-weight:800; color:var(--acc); font-size:1rem}
+
+  footer{border-top:1px solid var(--line); padding:1rem 1.2rem; text-align:center; color:var(--mut); font-size:.8rem}
+
+  /* ================= FITUR BARU ================= */
+  .burger{display:none; margin-left:auto; background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+    font-size:1.4rem; line-height:1; padding:.3rem .65rem; border-radius:9px; cursor:pointer}
+  .pgHead{display:flex; align-items:center; gap:.55rem; font-size:.75rem; color:var(--mut); white-space:nowrap}
+  .pgHead b{color:var(--acc)}
+  .progressbar{height:6px; background:var(--panel2); border-radius:99px; overflow:hidden; min-width:110px}
+  .progressbar i{display:block; height:100%; background:linear-gradient(90deg,var(--acc2),var(--acc)); border-radius:99px; transition:width .4s}
+
+  /* beranda / hero */
+  .hero{position:relative; overflow:hidden; border:1px solid var(--line); border-radius:18px;
+    background:radial-gradient(900px 420px at 18% 8%, #20304c, #101a30); padding:2.2rem 2rem 1.6rem}
+  .hero::after{content:''; position:absolute; right:-90px; top:-90px; width:320px; height:320px; border-radius:50%;
+    border:2px dashed rgba(249,115,22,.28); pointer-events:none}
+  .heroInner{display:grid; grid-template-columns:1.5fr 1fr; gap:2rem; align-items:center; position:relative; z-index:1}
+  .hero .jum-title{font-size:clamp(1.5rem,3.6vw,2.4rem); font-weight:800; line-height:1.12; margin:.35rem 0 .15rem}
+  .hero .jum-title small{display:block; font-size:clamp(.8rem,1.9vw,1.05rem); color:var(--acc2); letter-spacing:2px; font-weight:700; text-transform:uppercase}
+  .hero .caption{max-width:620px; color:var(--mut); margin:.5rem 0 1rem; font-size:.95rem}
+  .identChip{display:flex; flex-wrap:wrap; gap:.5rem; margin:.7rem 0 1.2rem}
+  .identChip span{background:rgba(15,23,42,.6); border:1px solid var(--line); border-radius:99px; padding:.32rem .85rem; font-size:.8rem; color:#cbd5e1; backdrop-filter:blur(4px)}
+  .identChip b{color:var(--acc)}
+  .heroBtns{display:flex; gap:.7rem; flex-wrap:wrap}
+  .btnX{background:var(--acc); border:none; color:#111; font-weight:700; padding:.7rem 1.3rem; border-radius:11px;
+    cursor:pointer; font-size:.9rem; transition:.18s; box-shadow:0 4px 14px rgba(0,0,0,.3)}
+  .btnX.sec{background:rgba(15,23,42,.6); color:#e2e8f0; border:1px solid var(--line)}
+  .btnX:hover{filter:brightness(1.13); transform:translateY(-1px)}
+  .hero-aside{display:flex; justify-content:center}
+  .cycCard{width:100%; max-width:340px; background:rgba(15,23,42,.55); border:1px solid var(--line); border-left:4px solid var(--acc);
+    border-radius:14px; padding:1rem 1.1rem; box-shadow:0 12px 30px rgba(0,0,0,.3); backdrop-filter:blur(5px)}
+  .cycTtl{font-size:.7rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--mut); margin-bottom:.65rem}
+  .cycSteps{display:flex; flex-direction:column; gap:.45rem}
+  .cycStep{display:flex; align-items:center; gap:.7rem; background:rgba(255,255,255,.03); border:1px solid rgba(148,163,184,.14);
+    border-radius:10px; padding:.5rem .7rem}
+  .cycStep .no{flex:0 0 1.6rem; height:1.6rem; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    background:var(--ac); color:#101827; font-weight:800; font-size:.85rem}
+  .cycStep b{font-size:.86rem; display:block; color:#e2e8f0}
+  .cycStep span{font-size:.72rem; color:var(--mut)}
+  .heroStats{display:grid; grid-template-columns:repeat(4,1fr); gap:.65rem; margin-top:1.4rem; position:relative; z-index:1}
+  .heroStats .st{background:rgba(15,23,42,.55); border:1px solid var(--line); border-radius:12px; padding:.6rem .9rem; font-size:.74rem; color:var(--mut); backdrop-filter:blur(4px)}
+  .heroStats .st b{color:var(--acc2); font-size:1.15rem; display:block; margin-bottom:.1rem}
+
+  .fgr{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:.8rem; margin-top:1.4rem}
+  .fcard{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:1rem 1.1rem; transition:.18s;
+    text-align:left; font-family:inherit; color:inherit; cursor:pointer; position:relative}
+  .fcard:hover{border-color:var(--acc); transform:translateY(-2px); box-shadow:0 10px 24px rgba(0,0,0,.25)}
+  .fcard .go{position:absolute; top:.8rem; right:.9rem; color:var(--acc); font-size:1rem; font-weight:800; opacity:0; transition:.18s}
+  .fcard:hover .go{opacity:1; right:.7rem}
+  .fcard .fi{font-size:1.5rem}
+  .fcard h4{font-size:.95rem; margin:.4rem 0 .2rem}
+  .fcard p{font-size:.78rem; color:var(--mut); margin:0}
+
+  /* pretest / hots bag */
+  .bagTag{display:inline-block; background:var(--panel2); border:1px solid var(--line); border-radius:99px; padding:.15rem .7rem; font-size:.72rem; color:var(--acc2); font-weight:700}
+  .hasQ{display:none; background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:1rem; margin-top:1rem}
+  .hasQ.show{display:block}
+  .hasQ .big{font-size:1.3rem; font-weight:800}
+  .hasQ .sub{color:var(--mut); font-size:.85rem; margin:.3rem 0 .8rem}
+  .statRow{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.6rem}
+  .statBox{background:var(--card); border:1px solid var(--line); border-radius:11px; padding:.7rem; text-align:center}
+  .statBox b{font-size:1.5rem; color:var(--acc); display:block}
+  .statBox span{font-size:.72rem; color:var(--mut)}
+  .messageBox{border-radius:11px; padding:.7rem .9rem; margin-top:.8rem; border:1px solid var(--line); font-size:.88rem}
+  .messageBox.ok{background:rgba(74,222,128,.1); border-color:var(--ok); color:#bbf7bd}
+  .messageBox.warn{background:rgba(248,113,113,.1); border-color:var(--err); color:#fecaca}
+  .pembahasan{background:rgba(56,189,248,.06); border-left:3px solid var(--acc2); border-radius:8px; padding:.55rem .8rem; margin:.5rem 0 .2rem; font-size:.82rem; color:#cbd5e1}
+  .prevNote{font-size:.82rem; color:var(--mut); background:var(--panel2); border:1px solid var(--line); border-radius:99px; padding:.3rem .9rem; display:inline-block; margin-top:.6rem; font-weight:700}
+
+  /* LKPD */
+  .lkBox{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:1.1rem; margin-bottom:1.1rem}
+  .lkBox h3{font-size:1rem; margin-bottom:.3rem; display:flex; align-items:center; gap:.5rem}
+  .lkBox .lkSub{font-size:.8rem; color:var(--mut); margin-bottom:.8rem}
+  select.inputSel, textarea.inputTxt, input[type=text].inputTxt{
+    background:var(--panel2); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:.45rem .6rem;
+    font-family:inherit; font-size:.85rem; width:100%;
+  }
+  select.inputSel{width:100%}
+  textarea.inputTxt{min-height:70px; resize:vertical}
+  .lkGrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:.7rem}
+  .lkRow{display:grid; grid-template-columns:1fr 1.4fr; gap:.5rem; align-items:center; font-size:.82rem}
+  .orderRow{display:flex; gap:.6rem; align-items:center; flex-wrap:wrap; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:.5rem .7rem}
+  .orderRow .nm{font-weight:700; min-width:110px}
+  .orderRow select{width:110px}
+
+  /* hasil belajar */
+  .hasilGrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.7rem; margin-top:.8rem}
+  .hBox{background:var(--card); border:1px solid var(--line); border-radius:12px; padding:.9rem; text-align:center}
+  .hBox b{font-size:1.5rem; color:var(--acc); display:block}
+  .hBox span{font-size:.75rem; color:var(--mut)}
+  .statusPill{display:inline-block; padding:.35rem 1rem; border-radius:99px; font-weight:800; font-size:.9rem; margin-top:.6rem}
+
+  /* refleksi */
+  .refQ{background:var(--panel); border:1px solid var(--line); border-radius:13px; padding:.9rem 1rem; margin-bottom:.8rem}
+  .refQ label{font-weight:700; font-size:.9rem; display:block; margin-bottom:.4rem}
+
+  /* learn mode */
+  .learnBox{background:var(--panel); border:1px solid var(--acc); border-radius:13px; padding:.8rem .9rem; margin-top:.7rem}
+  .learnTop{display:flex; justify-content:space-between; align-items:center; font-size:.85rem}
+  .learnTop b{color:var(--acc); letter-spacing:1px}
+  .lmini{height:6px; background:var(--panel2); border-radius:99px; overflow:hidden; margin:.5rem 0}
+  .lmini i{display:block; height:100%; background:var(--acc); transition:width .3s; width:25%}
+  .learnInfo{font-size:.82rem; color:#cbd5e1; margin-bottom:.6rem}
+  .learnInfo div{margin:.15rem 0}
+
+  /* indikator katup langsung */
+  #liveVals{display:flex; flex-wrap:wrap; gap:.4rem; margin-top:.55rem}
+  .lvTag{background:var(--panel2); border:1px solid var(--line); border-radius:99px; padding:.2rem .7rem; font-size:.75rem; font-weight:700}
+  .lvTag.buka{border-color:var(--ok); color:#bbf7bd}
+  .lvTag.tutup{border-color:var(--line); color:var(--mut)}
+
+  /* ---------- MODE TERANG ---------- */
+  html[data-theme="light"]{
+    --bg:#eef2f7; --panel:#ffffff; --panel2:#e2e8f0; --line:#cbd5e1;
+    --ink:#0f172a; --mut:#64748b; --card:#f8fafc;
+  }
+  html[data-theme="light"] body{background:var(--bg)}
+  html[data-theme="light"] header.top{background:rgba(255,255,255,.92); border-bottom-color:#d3dce6}
+  html[data-theme="light"] .hero{background:radial-gradient(900px 420px at 18% 8%, #ffffff, #e6edf5)}
+  html[data-theme="light"] .identChip span,
+  html[data-theme="light"] .cycCard,
+  html[data-theme="light"] .cycStep,
+  html[data-theme="light"] .heroStats .st,
+  html[data-theme="light"] .btnX.sec{background:rgba(255,255,255,.8); color:#334155}
+  html[data-theme="light"] .cycStep b{color:#0f172a}
+  html[data-theme="light"] .cycStep span{color:#64748b}
+  html[data-theme="light"] .messageBox.ok{color:#166534}
+  html[data-theme="light"] .messageBox.warn{color:#991b1b}
+  html[data-theme="light"] .lvTag.buka{color:#15803d}
+  html[data-theme="light"] #compDetail .dtBody,
+  html[data-theme="light"] .identChip span,
+  html[data-theme="light"] .pembahasan, html[data-theme="light"] .learnInfo{color:#334155}
+  /* area 3D selalu gelap seperti layar CAD */
+  html[data-theme="light"] #viewWrap{color:#e2e8f0}
+  html[data-theme="light"] #strokeOverlay, html[data-theme="light"] #angleMini,
+  html[data-theme="light"] .hintBar, html[data-theme="light"] .fsFab{color:#e2e8f0}
+  html[data-theme="light"] #strokeOverlay .small, html[data-theme="light"] #angleMini,
+  html[data-theme="light"] .hintBar{color:#94a3b8}
+  html[data-theme="light"] #angleMini b, html[data-theme="light"] .fsFab{color:#e2e8f0}
+  html[data-theme="light"] #viewWrap button.btn.sb,
+  html[data-theme="light"] #viewWrap button.chip{background:#273449; border-color:#334155; color:#94a3b8}
+  html[data-theme="light"] #viewWrap button.btn.sb:hover,
+  html[data-theme="light"] #viewWrap button.chip:hover{color:#e2e8f0; border-color:#64748b}
+  html[data-theme="light"] .q3dOpt{background:#eef2f7; color:#1e293b}
+  html[data-theme="light"] .q3dOpt.benar{color:#166534}
+  html[data-theme="light"] .q3dOpt.salah{color:#991b1b}
+  html[data-theme="light"] .q3dModeBtn.sel{color:#111}
+  html[data-theme="light"] .simCtl label.lbl,
+  html[data-theme="light"] .phaseBoxTtl{color:#94a3b8}
+  html[data-theme="light"] .learnBox{background:rgba(30,41,59,.95)}
+  html[data-theme="light"] .learnTop b{color:#fb923c}
+
+  .themeBtn{margin-left:.5rem; background:var(--panel2); border:1px solid var(--line); color:var(--ink);
+    width:2.2rem; height:2.2rem; border-radius:9px; cursor:pointer; font-size:1rem; transition:.15s}
+  .themeBtn:hover{border-color:var(--acc)}
+
+  @media(max-width:860px){
+    #infoCol{flex:1 1 100%}
+    #viewWrap{height:60vh; min-height:360px}
+    header.top{gap:.5rem}
+    .burger{display:block}
+    nav.tabs{display:none; flex:1 1 100%; order:3; margin-left:0; flex-direction:column; align-items:stretch}
+    nav.tabs.open{display:flex}
+    nav.tabs button.tab{text-align:left}
+    .hero{padding:1.5rem 1.2rem}
+    .heroInner{grid-template-columns:1fr}
+    .hero-aside{justify-content:stretch}
+    .cycCard{max-width:none}
+    .heroStats{grid-template-columns:repeat(2,1fr)}
+    .heroBtns .btnX{flex:1 1 100%}
+    main{padding:.8rem}
+    h1{font-size:1.45rem}
+  }
+
+  /* ---------- LOGIN, ROLE & PANEL GURU ---------- */
+  body:not(.isGuru) .guruOnly{display:none !important}
+  body.isGuru .siswaOnly{display:none !important}
+  input.inputTxt{background:var(--panel2); border:1px solid var(--line); color:var(--ink); border-radius:9px;
+    padding:.55rem .7rem; font-family:inherit; font-size:.9rem; width:100%}
+  input.inputTxt:focus, select.inputSel:focus, textarea.inputTxt:focus{outline:2px solid var(--acc2); outline-offset:1px}
+  #authGate{position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center; padding:16px;
+    background:radial-gradient(1000px 600px at 20% 10%, #1e2c44, #0b1220 70%); overflow:auto}
+  html[data-theme="light"] #authGate{background:radial-gradient(1000px 600px at 20% 10%, #ffffff, #e6edf5 70%)}
+  body.authed #authGate{display:none}
+  .authCard{width:min(420px,100%); background:var(--panel); border:1px solid var(--line); border-radius:18px;
+    padding:1.4rem 1.3rem; box-shadow:0 20px 60px rgba(0,0,0,.35)}
+  .authBrand{display:flex; align-items:center; gap:.6rem; font-weight:800; font-size:1.05rem}
+  .authBrand .badge{background:linear-gradient(135deg,var(--acc),#fb923c); color:#111; border-radius:8px; padding:.2rem .5rem; font-weight:800}
+  .authCard h2{font-size:1.4rem; margin:.9rem 0 .15rem; line-height:1.2}
+  .authTabs{display:grid; grid-template-columns:1fr 1fr; gap:.3rem; background:var(--panel2); border-radius:11px; padding:.25rem; margin:1rem 0}
+  .authTabs button{background:transparent; border:0; color:var(--mut); font-weight:700; padding:.5rem; border-radius:9px; cursor:pointer; font-size:.88rem}
+  .authTabs button.on{background:var(--acc); color:#111}
+  .fld{display:block; margin-bottom:.7rem}
+  .fld > span{display:block; font-size:.76rem; font-weight:700; color:var(--mut); margin-bottom:.25rem; letter-spacing:.3px}
+  .fld small{display:block; font-size:.72rem; color:var(--mut); margin-top:.2rem}
+  .fRow{display:grid; grid-template-columns:1fr 1fr; gap:.6rem}
+  .authCard button.btn{width:100%; padding:.7rem; font-size:.95rem; margin-top:.2rem}
+  .authCard button.btn:disabled, .btn:disabled{opacity:.6; cursor:wait}
+  .authMsg{min-height:1.2rem; font-size:.84rem; margin-top:.7rem; line-height:1.45}
+  .authMsg.err{color:var(--err)} .authMsg.ok{color:var(--ok)}
+  .authNote{font-size:.75rem; color:var(--mut); margin-top:.9rem; line-height:1.5; border-top:1px dashed var(--line); padding-top:.7rem}
+  .linkBtn{background:none; border:0; color:var(--acc2); cursor:pointer; font-size:.8rem; padding:0; text-decoration:underline}
+  .userChip{display:none; align-items:center; gap:.45rem; font-size:.8rem; background:var(--panel2); border:1px solid var(--line);
+    border-radius:99px; padding:.2rem .25rem .2rem .75rem; white-space:nowrap}
+  body.authed .userChip{display:flex}
+  .userChip .nm{max-width:170px; overflow:hidden; text-overflow:ellipsis; font-weight:600}
+  .userChip .rl{font-size:.66rem; font-weight:800; padding:.12rem .5rem; border-radius:99px; background:var(--acc2); color:#0b1220;
+    text-transform:uppercase; letter-spacing:.5px}
+  .userChip .rl.guru{background:var(--acc)}
+  .userChip button{background:transparent; border:1px solid var(--line); color:var(--ink); border-radius:99px; padding:.2rem .65rem; cursor:pointer; font-size:.75rem}
+  .userChip button:hover{border-color:var(--err); color:var(--err)}
+  .gTools{display:flex; flex-wrap:wrap; gap:.5rem; align-items:center; margin-bottom:.8rem}
+  .gTools .inputTxt, .gTools .inputSel{width:auto; flex:1 1 180px; max-width:280px}
+  .gTools .sp{flex:1 1 auto}
+  .tblWrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px}
+  table.gTbl{width:100%; border-collapse:collapse; font-size:.84rem; min-width:860px}
+  .gTbl th{background:var(--panel2); text-align:left; padding:.55rem .6rem; font-size:.7rem; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--mut); white-space:nowrap}
+  .gTbl td{padding:.5rem .6rem; border-top:1px solid var(--line); vertical-align:middle}
+  .gTbl tr:hover td{background:rgba(148,163,184,.06)}
+  .gTbl .sm{color:var(--mut); font-size:.73rem; font-weight:400; display:block}
+  .gTbl .act{display:flex; gap:.3rem}
+  .gTbl .emptyRow td{text-align:center; color:var(--mut); padding:1.4rem}
+  .miniBtn{background:var(--panel2); border:1px solid var(--line); color:var(--ink); border-radius:8px; padding:.28rem .55rem;
+    font-size:.75rem; cursor:pointer; white-space:nowrap; font-family:inherit}
+  .miniBtn:hover{border-color:var(--acc2)}
+  .miniBtn.danger:hover{border-color:var(--err); color:var(--err)}
+  .nBadge{display:inline-block; min-width:2.7rem; text-align:center; padding:.12rem .45rem; border-radius:7px; font-weight:800;
+    font-variant-numeric:tabular-nums}
+  .nBadge.hi{background:rgba(74,222,128,.16); color:var(--ok)}
+  .nBadge.md{background:rgba(56,189,248,.16); color:var(--acc2)}
+  .nBadge.lo{background:rgba(248,113,113,.16); color:var(--err)}
+  .nBadge.na{color:var(--mut)}
+  #modalBg{position:fixed; inset:0; z-index:150; background:rgba(2,6,15,.65); display:none; align-items:flex-start;
+    justify-content:center; padding:5vh 16px; overflow:auto}
+  #modalBg.show{display:flex}
+  .modalCard{width:min(780px,100%); background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:1.2rem 1.25rem}
+  .modalCard h3{display:flex; justify-content:space-between; align-items:center; gap:.5rem; font-size:1.1rem}
+  .modalCard h4{font-size:.85rem; margin:1rem 0 .35rem; color:var(--acc2); text-transform:uppercase; letter-spacing:.8px}
+  .modalCard .x{background:transparent; border:0; color:var(--mut); font-size:1.4rem; cursor:pointer; line-height:1}
+  .essay{background:var(--card); border:1px solid var(--line); border-radius:9px; padding:.5rem .7rem; font-size:.84rem;
+    white-space:pre-wrap; margin:.25rem 0 .6rem}
+  .essay.empty{color:var(--mut); font-style:italic}
+  .qLbl{font-size:.8rem; font-weight:600; margin-top:.4rem}
+  .bsRow{display:flex; gap:.6rem; flex-wrap:wrap; margin-top:.6rem}
+  .bsBox{flex:1 1 120px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:.8rem; text-align:center}
+  .bsBox b{display:block; font-size:1.7rem; font-variant-numeric:tabular-nums; line-height:1.2}
+  .bsBox span{font-size:.75rem; color:var(--mut)}
+  .bsBox.b b{color:var(--ok)} .bsBox.s b{color:var(--err)}
+  .hBox .bs{font-size:1.35rem; font-weight:800; display:block; font-variant-numeric:tabular-nums}
+  .hBox .bs i{font-style:normal; color:var(--ok)} .hBox .bs em{font-style:normal; color:var(--err)}
+  .histList{display:flex; flex-direction:column; gap:.4rem; margin-top:.5rem}
+  .histItem{display:flex; justify-content:space-between; align-items:center; gap:.6rem; flex-wrap:wrap; background:var(--card);
+    border:1px solid var(--line); border-radius:10px; padding:.5rem .75rem; font-size:.84rem}
+  .histItem .when{color:var(--mut); font-size:.75rem}
+  .saveNote{font-size:.8rem; color:var(--mut); margin-top:.6rem}
+  .saveNote.ok{color:var(--ok)} .saveNote.err{color:var(--err)}
+  .profileLine{display:flex; flex-wrap:wrap; gap:.5rem}
+  @media (max-width:760px){
+    .userChip .nm{max-width:80px}
+    .fRow{grid-template-columns:1fr}
+  }
+</style>
+<script src="config.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ================= LOGIN ================= -->
+<div id="authGate">
+  <div class="authCard">
+    <div class="authBrand"><span class="badge">R4</span> Modul Ajar · Motor 4 Tak</div>
+    <h2 id="authTitle">Masuk untuk mulai belajar</h2>
+    <div class="muted">Gunakan akun guru atau siswa.</div>
+
+    <div id="authSetup" class="messageBox warn" style="display:none">
+      <b>Database belum terhubung.</b><br>
+      Isi <code>SUPABASE_URL</code> dan <code>SUPABASE_ANON_KEY</code> di file <code>config.js</code>
+      (lihat <code>PANDUAN_SETUP.txt</code>), lalu muat ulang halaman ini.
+      <div style="margin-top:.6rem"><button class="linkBtn" id="demoBtn">Coba tanpa database (mode demo — data tidak disimpan)</button></div>
+    </div>
+
+    <div id="authForms">
+      <div class="authTabs" role="tablist">
+        <button type="button" class="on" data-at="login">Masuk</button>
+        <button type="button" data-at="daftar">Daftar Siswa</button>
+      </div>
+      <form id="loginForm" autocomplete="on">
+        <label class="fld"><span>USERNAME</span><input class="inputTxt" id="liUser" autocomplete="username" required placeholder="mis. andi.pratama"></label>
+        <label class="fld"><span>PASSWORD</span><input class="inputTxt" id="liPass" type="password" autocomplete="current-password" required></label>
+        <button class="btn" type="submit" id="liBtn">Masuk</button>
+      </form>
+      <form id="signupForm" style="display:none" autocomplete="on">
+        <label class="fld"><span>NAMA LENGKAP</span><input class="inputTxt" id="suNama" required maxlength="80"></label>
+        <div class="fRow">
+          <label class="fld"><span>KELAS</span><input class="inputTxt" id="suKelas" placeholder="mis. X TKR 1" maxlength="30"></label>
+          <label class="fld"><span>USERNAME</span><input class="inputTxt" id="suUser" autocomplete="username" required maxlength="30"></label>
+        </div>
+        <label class="fld"><span>PASSWORD</span><input class="inputTxt" id="suPass" type="password" autocomplete="new-password" required minlength="6">
+          <small>Minimal 6 karakter. Username: huruf kecil, angka, titik atau garis bawah.</small></label>
+        <button class="btn" type="submit" id="suBtn">Buat Akun Siswa</button>
+      </form>
+      <div class="authMsg" id="authMsg" role="status"></div>
+      <div class="authNote">Akun <b>guru</b> disiapkan oleh admin sekolah. Lupa password? Minta guru untuk mereset password akunmu.</div>
+    </div>
+  </div>
+</div>
+
+<!-- jendela detail (panel guru) -->
+<div id="modalBg"><div class="modalCard" id="modalCard"></div></div>
+
+<header class="top">
+  <div class="logo"><span class="badge">R4</span> Motor 4 Tak</div>
+  <div class="pgHead siswaOnly" id="pgHeadBar" title="Progress belajar">
+    <span>Progress</span>
+    <div class="progressbar"><i id="pgBar"></i></div>
+    <b id="pgPct">0%</b>
+  </div>
+  <div class="userChip" id="userChip"><span class="nm" id="ucName"></span><span class="rl" id="ucRole"></span><button id="logoutBtn" title="Keluar dari akun">Keluar</button></div>
+  <button class="themeBtn" id="themeBtn" title="Ganti tema terang/gelap" aria-label="Ganti tema">☀️</button>
+  <button class="burger" id="burgerBtn" aria-label="Menu">☰</button>
+  <nav class="tabs" id="navTabs">
+    <button class="tab aktif" data-sek="beranda" title="Beranda">🏠 Beranda</button>
+    <button class="tab" data-sek="pretest"  title="Pre-Test">📝 Pre-Test</button>
+    <button class="tab" data-sek="komp"     title="Komponen Motor 4 Tak">🔩 Komponen</button>
+    <button class="tab" data-sek="sim"      title="Simulasi 3D">🧊 Simulasi 3D</button>
+    <button class="tab" data-sek="lkpd"     title="LKPD Interaktif">✍️ LKPD</button>
+    <button class="tab" data-sek="kuis"     title="Evaluasi Akhir">✅ Evaluasi</button>
+    <button class="tab siswaOnly" data-sek="hasil" title="Hasil Belajar">📊 Hasil Belajar</button>
+    <button class="tab" data-sek="refleksi" title="Refleksi">💭 Refleksi</button>
+    <button class="tab guruOnly" data-sek="guru" title="Panel Guru">👩‍🏫 Panel Guru</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ================= BERANDA ================= -->
+  <section class="blok muncul" id="sek-beranda">
+    <div class="hero">
+      <div class="heroInner">
+        <div class="hero-main">
+          <div class="kicker">Media Pembelajaran Digital · Teknik Otomotif</div>
+          <div class="jum-title"><small>Siklus Kerja Motor 4 Tak</small>MODUL AJAR INTERAKTIF</div>
+          <p class="caption">
+            Media pembelajaran interaktif untuk memahami komponen dan prinsip kerja motor 4 tak.
+            Jelajahi simulasi 3D, LKPD, dan evaluasi dalam satu tempat.
+          </p>
+          <div class="identChip">
+            <span>Mata Pelajaran: <b>Dasar-Dasar Teknik Otomotif</b></span>
+            <span>Kelas/Fase: <b>X / E</b></span>
+            <span>Materi: <b>Siklus Kerja Motor 4 Tak</b></span>
+          </div>
+          <div class="heroBtns">
+            <button class="btnX" data-goto="pretest">🚀 Mulai Pembelajaran</button>
+            <button class="btnX sec" data-goto="komp">🔩 Komponen Motor 4 Tak</button>
+            <button class="btnX sec" data-goto="sim">🧊 Simulasi 3D</button>
+          </div>
+        </div>
+        <div class="hero-aside">
+          <div class="cycCard">
+            <div class="cycTtl">◈ Siklus Kerja · 2 Putaran Engkol</div>
+            <div class="cycSteps">
+              <div class="cycStep" style="--ac:#4aa3ff"><span class="no">1</span><div><b>Hisap</b><span>0°–180° · Katup isap terbuka</span></div></div>
+              <div class="cycStep" style="--ac:#ffb648"><span class="no">2</span><div><b>Kompresi</b><span>180°–360° · Kedua katup tertutup</span></div></div>
+              <div class="cycStep" style="--ac:#ff5a3c"><span class="no">3</span><div><b>Usaha</b><span>360°–540° · Busi meletik</span></div></div>
+              <div class="cycStep" style="--ac:#b0b6bd"><span class="no">4</span><div><b>Buang</b><span>540°–720° · Katup buang terbuka</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="heroStats">
+        <div class="st"><b>4</b><span>Langkah Siklus</span></div>
+        <div class="st"><b>720°</b><span>Putaran Engkol</span></div>
+        <div class="st"><b>11</b><span>Komponen</span></div>
+        <div class="st"><b>2×</b><span>Engkol / Siklus</span></div>
+      </div>
+    </div>
+    <div class="fgr">
+      <button class="fcard" data-goto="pretest"><span class="go">→</span><div class="fi">📝</div><h4>Pre-Test</h4><p>Ukur pengetahuan awalmu.</p></button>
+      <button class="fcard" data-goto="sim"><span class="go">→</span><div class="fi">🧊</div><h4>Simulasi 3D</h4><p>Amati mekanisme bergerak.</p></button>
+      <button class="fcard" data-goto="lkpd"><span class="go">→</span><div class="fi">✍️</div><h4>LKPD Interaktif</h4><p>Lembar kerja peserta didik.</p></button>
+      <button class="fcard" data-goto="kuis"><span class="go">→</span><div class="fi">✅</div><h4>Evaluasi</h4><p>Post-test akhir materi.</p></button>
+    </div>
+  </section>
+
+  <!-- ================= PRE-TEST ================= -->
+  <section class="blok" id="sek-pretest">
+    <div class="kicker">Pra-Pembelajaran</div>
+    <h1>Pre-Test</h1>
+    <p class="intro">Kerjakan 5 soal berikut untuk mengetahui pengetahuan awalmu. Hasil pre-test <b>tidak memengaruhi nilai akhir</b>.</p>
+    <div id="preWrap"></div>
+    <div class="ctlRow" style="margin-top:.6rem">
+      <button class="btn" id="preCheck">Periksa Jawaban</button>
+      <button class="btn sb" id="preReset">Ulangi</button>
+    </div>
+    <div class="hasQ" id="preResult"></div>
+  </section>
+
+  <!-- ================= SIMULASI ================= -->
+  <section class="blok" id="sek-sim">
+    <div class="kicker">Teknik Kendaraan Ringan · Otomotif</div>
+    <h1>Siklus Kerja Motor 4 Tak</h1>
+    <p class="intro">
+      Motor bensin 4 tak menyelesaikan satu siklus dalam <b>empat langkah piston</b> (2 putaran poros engkol = 720°):
+      <b>Hisap → Kompresi → Usaha → Buang</b>. Putar, perbesar, dan amati mekanismenya langsung pada model 3D di bawah.
+      Klik bagian mesin untuk melihat nama komponen.
+    </p>
+
+    <div class="simLayout">
+      <!-- panel kiri -->
+      <div id="infoCol">
+        <div class="card" id="strokePanel">
+          <div class="stSub" id="stSub">LANGKAH 1 DARI 4</div>
+          <div class="stTitle" id="stTitle">Langkah Hisap</div>
+          <div class="stDesc" id="stDesc">…</div>
+          <div class="stMeta">
+            <span class="chipMini" id="stPos">TMA → TMB</span>
+            <span class="chipMini" id="stAngle">0°</span>
+            <span class="chipMini" id="stTurn">Putaran 1/2</span>
+          </div>
+          <div class="topline" style="margin-top:.7rem"><span>TMA</span><span>TMB</span></div>
+          <div id="angTrack"><div id="angBar"></div></div>
+          <div id="liveVals">
+            <span class="lvTag buka" id="lvIn">Katup Isap: BUKA</span>
+            <span class="lvTag tutup" id="lvEx">Katup Buang: TUTUP</span>
+            <span class="lvTag tutup" id="lvLangkah">● Hisap</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>⚙ Komponen Mesin (klik)</h3>
+          <div id="compList"></div>
+          <div id="compDetail"></div>
+        </div>
+
+        <div class="card" id="q3dCard">
+          <h3>🎮 Kuis 3D</h3>
+          <div class="ctlRow" style="margin-bottom:.4rem">
+            <button class="btn sb q3dModeBtn" id="q3dModeName">🔍 Tebak Nama</button>
+            <button class="btn sb q3dModeBtn" id="q3dModeFunc">💡 Apa Fungsinya?</button>
+          </div>
+          <div class="muted" id="q3dHint" style="font-size:.75rem">Pilih salah satu mode di atas untuk mulai kuis interaktif di model 3D.</div>
+          <div id="q3dPanel" style="display:none">
+            <div class="qn" id="q3dTitle" style="font-size:.88rem"></div>
+            <div id="q3dOpts" style="margin-top:.4rem"></div>
+            <div id="q3dFb" style="margin-top:.5rem"></div>
+            <div class="ctlRow" style="margin-top:.5rem">
+              <button class="btn" id="q3dNext">Lanjut →</button>
+              <span style="margin-left:auto;color:var(--mut);font-size:.8rem">Skor: <b id="q3dScore">0 / 0</b></span>
+            </div>
+            <div class="muted" id="q3dBest" style="font-size:.72rem;margin-top:.3rem"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- viewer kanan -->
+      <div id="viewCol">
+        <div id="viewWrap">
+          <div id="view3d"></div>
+          <div class="infoTag" id="infoTag" style="display:none"></div>
+          <div id="strokeOverlay">
+            <div class="small" id="ovSmall">LANGKAH 1 · 0°</div>
+            <div class="big" id="ovBig">Langkah Hisap</div>
+            <div class="small" style="margin-top:.2rem" id="ovValve">Katup Isap: BUKA · Katup Buang: TUTUP</div>
+          </div>
+          <div id="angleMini"><div><b id="amDeg">0°</b> / 720°</div><div id="amPos">TMA</div></div>
+          <div class="phaseBox">
+            <div class="phaseBoxTtl">◈ Pilih Langkah</div>
+            <div class="phaseChips">
+              <button class="chip" data-go="0"  style="--ac:#4aa3ff"><span class="dot" style="background:#4aa3ff"></span>1 · Hisap</button>
+              <button class="chip" data-go="180" style="--ac:#ffb648"><span class="dot" style="background:#ffb648"></span>2 · Kompresi</button>
+              <button class="chip" data-go="360" style="--ac:#ff5a3c"><span class="dot" style="background:#ff5a3c"></span>3 · Usaha</button>
+              <button class="chip" data-go="540" style="--ac:#b0b6bd"><span class="dot" style="background:#b0b6bd"></span>4 · Buang</button>
+            </div>
+          </div>
+          <button class="fsFab" id="fsBtn" title="Layar penuh">⛶</button>
+          <div class="hintBar">🖱️ Seret: putar pandangan &nbsp;·&nbsp; Klik: pilih komponen</div>
+          <div id="webglMsg"><div><b>WebGL tidak tersedia.</b><br>Gunakan browser modern (Chrome / Edge / Firefox) agar simulasi 3D dapat ditampilkan.</div></div>
+
+          <!-- kontrol simulasi : dock kiri (normal) / bar bawah (fullscreen) -->
+          <div class="simCtl" id="simCtl">
+            <div class="simGrp">
+              <span class="simLbl">Playback</span>
+              <div class="ctlRow">
+                <button class="btn" id="playBtn">⏸ Jeda</button>
+                <button class="btn sb" id="stepBtn">Langkah →</button>
+              </div>
+            </div>
+            <div class="simGrp">
+              <span class="simLbl">Mode</span>
+              <div class="ctlRow" style="flex-wrap:wrap">
+                <button class="btn sb" id="learnBtn" style="border-color:var(--acc2)">📖 Mode Belajar: OFF</button>
+                <button class="btn" id="explodeBtn" style="border-color:var(--acc2)">💥 Terpisah: OFF</button>
+              </div>
+            </div>
+            <div class="simGrp">
+              <span class="simLbl">Kamera</span>
+              <div class="ctlRow" style="flex-wrap:wrap">
+                <button class="btn sb" id="camFull">Full</button>
+                <button class="btn sb" id="camFront">Depan</button>
+                <button class="btn sb" id="camSide">Samping</button>
+                <button class="btn sb" id="camTop">Atas</button>
+                <button class="btn sb" id="zoomInBtn">＋</button>
+                <button class="btn sb" id="zoomOutBtn">－</button>
+                <button class="btn sb" id="resetBtn">Reset</button>
+              </div>
+            </div>
+            <div class="simGrp">
+              <span class="simLbl">Tampilan</span>
+              <div class="ctlRow" style="flex-wrap:wrap">
+                <label class="lbl">Kecepatan <input type="range" id="speedRange" min="40" max="400" value="160"></label>
+                <label class="lbl"><input type="checkbox" id="labelsChk" checked> Label</label>
+                <label class="lbl" title="Grafis HD: resolusi penuh, anti-aliasing & efek cahaya. Matikan jika perangkat terasa lambat."><input type="checkbox" id="hdChk" checked> HD</label>
+              </div>
+            </div>
+            <div class="learnBox" id="learnPanel" style="display:none">
+              <div class="learnTop"><b id="learnStep">LANGKAH 1/4</b><span id="learnName">Langkah Hisap</span></div>
+              <div class="lmini"><i id="learnBar"></i></div>
+              <div class="learnInfo" id="learnInfo"></div>
+              <div class="ctlRow">
+                <button class="btn sb" id="learnPrev">← Sebelumnya</button>
+                <button class="btn" id="learnNext">Berikutnya →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KOMPONEN ================= -->
+  <section class="blok" id="sek-komp">
+    <div class="kicker">Anatomi Mesin</div>
+    <h1>Komponen Motor 4 Tak</h1>
+    <p class="subhead">
+      Klik salah satu komponen untuk menyorotnya di model 3D. Setiap komponen memiliki peran penting dalam
+      empat langkah siklus kerja. Model akan berpindah ke tampilan simulasi dan fokus pada komponen yang dipilih.
+    </p>
+    <div class="compGrid" id="compGrid"></div>
+    <div id="compDetailB" class="card"></div>
+  </section>
+
+  <!-- ================= KUIS ================= -->
+  <section class="blok" id="sek-kuis">
+    <div class="kicker">Evaluasi · Post-Test</div>
+    <h1>Uji Pemahaman (15 Soal)</h1>
+    <p class="subhead">
+      Evaluasi terdiri dari 15 soal: 5 pemahaman dasar, 5 aplikasi, dan 5 analisis/HOTS.
+      Jawab semua soal, lalu tekan <b>Periksa Jawaban</b> untuk melihat skor, pembahasan, dan rekomendasi belajar.
+    </p>
+    <div id="quizWrap"></div>
+    <div class="ctlRow" style="margin-top:.6rem">
+      <button class="btn" id="checkBtn">Periksa Jawaban</button>
+      <button class="btn sb" id="resetQuiz">Ulangi</button>
+      <span style="margin-left:.5rem; color:var(--mut)">Benar: <span id="skor">0 / 15</span></span>
+      <span class="bagTag guruOnly" id="evalKategori" style="display:none">Kategori: —</span>
+    </div>
+    <div class="hasQ" id="evalResult"></div>
+  </section>
+
+  <!-- ================= LKPD ================= -->
+  <section class="blok" id="sek-lkpd">
+    <div class="kicker">Lembar Kerja Peserta Didik</div>
+    <h1>LKPD Individu — Siklus Kerja Motor 4 Tak</h1>
+    <p class="intro">Kerjakan 4 aktivitas berikut, lalu tekan <b>Simpan Jawaban</b>. Jawabanmu dikirim ke guru untuk dinilai — kamu dapat melihat jumlah jawaban benar dan salah pada Aktivitas 1 dan 2.</p>
+    <div id="lkpdWrap"></div>
+    <div class="ctlRow" style="margin-top:.6rem">
+      <button class="btn" id="lkpdSave">💾 Simpan Jawaban</button>
+      <button class="btn sb" id="lkpdReset">Reset Jawaban</button>
+      <span class="guruOnly" style="margin-left:.5rem; color:var(--mut)">Nilai LKPD: <span id="lkpdScore">0</span></span>
+    </div>
+    <div class="hasQ" id="lkpdResult"></div>
+  </section>
+
+  <!-- ================= HASIL BELAJAR ================= -->
+  <section class="blok" id="sek-hasil">
+    <div class="kicker">Rekap Pembelajaran</div>
+    <h1>Hasil Belajar</h1>
+    <p class="intro">Rekap jawaban benar dan salah dari setiap tes yang kamu kerjakan. <b>Nilai akhir diberikan oleh guru</b> dan hanya dapat dilihat oleh guru.</p>
+    <div class="lkBox">
+      <div class="profileLine" id="profileLine"></div>
+    </div>
+    <div id="hasilWrap"></div>
+  </section>
+
+  <!-- ================= REFLEKSI ================= -->
+  <section class="blok" id="sek-refleksi">
+    <div class="kicker">Evaluasi Diri</div>
+    <h1>Refleksi Pembelajaran</h1>
+    <p class="intro">Renungkan pengalaman belajarmu setelah menggunakan media ini, lalu simpan.</p>
+    <div id="refWrap"></div>
+    <div class="ctlRow" style="margin-top:.6rem">
+      <button class="btn" id="refSave">💾 Simpan Refleksi</button>
+      <button class="btn sb" id="refReset">Reset</button>
+    </div>
+    <div class="hasQ" id="refResult"></div>
+  </section>
+
+  <!-- ================= PANEL GURU ================= -->
+  <section class="blok" id="sek-guru">
+    <div class="kicker">Khusus Guru</div>
+    <h1>Panel Guru — Nilai Peserta Didik</h1>
+    <p class="intro">Nilai di halaman ini <b>hanya dapat dilihat oleh guru</b>. Siswa hanya melihat jumlah jawaban benar dan salah.
+      Nilai yang ditampilkan adalah percobaan <b>terakhir</b>; klik <b>Detail</b> untuk riwayat, jawaban esai LKPD, dan refleksi.</p>
+    <div class="hasilGrid" id="gStats"></div>
+    <div class="lkBox" style="margin-top:1rem">
+      <div class="gTools">
+        <input class="inputTxt" id="gSearch" placeholder="🔍 Cari nama / username…">
+        <select class="inputSel" id="gKelas"><option value="">Semua kelas</option></select>
+        <span class="sp"></span>
+        <button class="btn sb" id="gReload">↻ Muat Ulang</button>
+        <button class="btn sb" id="gCsv">⬇ Ekspor CSV</button>
+        <button class="btn" id="gAddBtn">＋ Tambah Siswa</button>
+      </div>
+      <div class="lkBox" id="gAddBox" style="display:none; background:var(--card)">
+        <h3>＋ Tambah Akun Siswa</h3>
+        <div class="lkSub">Siswa dapat langsung masuk memakai username &amp; password ini.</div>
+        <form id="gAddForm">
+          <div class="fRow">
+            <label class="fld"><span>NAMA LENGKAP</span><input class="inputTxt" id="gaNama" required maxlength="80"></label>
+            <label class="fld"><span>KELAS</span><input class="inputTxt" id="gaKelas" maxlength="30"></label>
+          </div>
+          <div class="fRow">
+            <label class="fld"><span>USERNAME</span><input class="inputTxt" id="gaUser" required maxlength="30"></label>
+            <label class="fld"><span>PASSWORD AWAL</span><input class="inputTxt" id="gaPass" required minlength="6"></label>
+          </div>
+          <div class="ctlRow"><button class="btn" type="submit" id="gaBtn">Simpan Akun</button>
+            <button class="btn sb" type="button" id="gaCancel">Batal</button></div>
+          <div class="authMsg" id="gaMsg"></div>
+        </form>
+      </div>
+      <div class="tblWrap">
+        <table class="gTbl">
+          <thead><tr><th>Peserta Didik</th><th>Kelas</th><th>Pre-Test</th><th>Evaluasi</th><th>LKPD</th><th>Progres</th><th>Refleksi</th><th>Aksi</th></tr></thead>
+          <tbody id="gBody"><tr class="emptyRow"><td colspan="8">Memuat data…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Modul Ajar Interaktif · Siklus Kerja Motor 4 Tak — dibuat dengan Three.js &amp; Supabase. Simulasi untuk tujuan pembelajaran.
+</footer>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+/* status akun & database (diisi setelah login) */
+const LS_K = 'm4_ajar_v1';
+let me = null;          // profil pengguna yang sedang login
+let sb = null;          // klien Supabase
+let myHasil = [];       // riwayat benar/salah milik siswa
+
+/* ============================================================
+   DATA SAKLAR / KONTEN
+============================================================ */
+const STROKES = [
+  { id:'hisap', name:'Langkah Hisap', sub:'Langkah 1 dari 4', pos:'TMA → TMB', color:'#4aa3ff',
+    desc:'Piston bergerak dari Titik Mati Atas (TMA) ke Titik Mati Bawah (TMB). Katup isap terbuka, katup buang tertutup. Ruang silinder membesar sehingga campuran udara + bahan bakar tersedot masuk melalui katup isap.' },
+  { id:'kompresi', name:'Langkah Kompresi', sub:'Langkah 2 dari 4', pos:'TMB → TMA', color:'#ffb648',
+    desc:'Piston bergerak dari TMB ke TMA. Kedua katup tertutup rapat. Campuran udara–bahan bakar dimampatkan sehingga tekanan dan suhunya naik drastis, siap dibakar oleh busi.' },
+  { id:'usaha', name:'Langkah Usaha', sub:'Langkah 3 dari 4', pos:'TMA → TMB', color:'#ff5a3c',
+    desc:'Tepat di TMA, busi memercikkan bunga api. Campuran terbakar dahsyat dan memuai. Tekanan ledakan mendorong piston turun dari TMA ke TMB — satu-satunya langkah yang menghasilkan tenaga untuk memutar poros engkol.' },
+  { id:'buang', name:'Langkah Buang', sub:'Langkah 4 dari 4', pos:'TMB → TMA', color:'#b0b6bd',
+    desc:'Katup buang terbuka, katup isap tertutup. Piston bergerak dari TMB ke TMA dan mendorong gas sisa pembakaran keluar melalui katup buang menuju knalpot. Siap mengulang siklus.' },
+];
+
+const COMPONENTS = [
+  { key:'blok',      ico:'◫', name:'Blok Silinder', en:'Cylinder Block',
+    desc:'Rumah utama mesin yang menampung silinder, piston, dan mekanisme lainnya. Dilengkapi jaket pendingin untuk membuang panas hasil pembakaran.',
+    pos:[4.6,5.0,7.0], target:[0,4.0,0] },
+  { key:'kepala',    ico:'▤', name:'Kepala Silinder', en:'Cylinder Head',
+    desc:'Penutup bagian atas silinder yang menampung ruang bakar, dudukan katup, dan busi. Mengarahkan campuran masuk dan gas buang keluar.',
+    pos:[3.4,7.8,5.2], target:[0,6.4,0] },
+  { key:'piston',    ico:'▮', name:'Piston', en:'Piston',
+    desc:'Komponen yang bergerak naik-turun (translasi) di dalam silinder. Menerima tekanan ledakan dan meneruskannya ke batang torak. Saat bergerak dari TMA ke TMB disebut langkah menurun, dan sebaliknya.',
+    pos:[-4.2,4.4,4.6], target:[0,3.6,0] },
+  { key:'ring',      ico:'◎', name:'Ring Piston', en:'Piston Rings',
+    desc:'Cincin baja yang melingkari piston. Ring kompresi merapatkan ruang bakar agar tidak bocor, ring oli mengikis sisa oli pada dinding silinder.',
+    pos:[4.6,4.4,4.0], target:[0,3.8,0] },
+  { key:'batang',    ico:'╱', name:'Batang Torak', en:'Connecting Rod',
+    desc:'Menghubungkan piston dengan poros engkol. Mengubah gerak translasi piston menjadi gerak rotasi, sekaligus meneruskan gaya ledakan ke poros engkol.',
+    pos:[-5.2,3.2,4.2], target:[0,2.6,0] },
+  { key:'poros',     ico:'⚙', name:'Poros Engkol', en:'Crankshaft',
+    desc:'Mengubah gerak naik-turun piston menjadi putaran. Setiap langkah menempuh 180° putaran; satu siklus penuh (4 langkah) = 2 putaran (720°).',
+    pos:[4.8,2.4,6.4], target:[0,1.6,0] },
+  { key:'katupIsap', ico:'⌄', name:'Katup Isap', en:'Intake Valve',
+    desc:'Membuka jalur masuk campuran udara–bahan bakar ke ruang bakar. Terbuka hanya saat langkah hisap.',
+    pos:[-2.9,6.4,4.4], target:[-0.7,5.9,0] },
+  { key:'katupBuang',ico:'⌃', name:'Katup Buang', en:'Exhaust Valve',
+    desc:'Membuka jalur keluar gas sisa pembakaran. Terbuka hanya saat langkah buang.',
+    pos:[2.9,6.4,4.4], target:[0.7,5.9,0] },
+  { key:'busi',      ico:'⚡', name:'Busi', en:'Spark Plug',
+    desc:'Menghasilkan percikan api bertegangan tinggi (±12.000 V) untuk membakar campuran pada langkah usaha. Percikan terjadi tepat saat piston mencapai TMA.',
+    pos:[0,9.2,5.4], target:[0,6.9,0] },
+  { key:'nokenas',   ico:'◙', name:'Camshaft / Noken As', en:'Camshaft',
+    desc:'Poros yang berputar setengah kecepatan poros engkol (1 siklus = 1 putaran camshaft). Tonjolannya (lobe) menekan mekanisme katup untuk membuka–menutup katup sesuai waktu yang tepat.',
+    pos:[3.4,8.8,5.8], target:[0,7.5,0] },
+  { key:'rodaGaya',  ico:'◍', name:'Roda Gaya', en:'Flywheel',
+    desc:'Cakram berat pada ujung poros engkol yang menyimpan energi putar. Memberikan putaran yang stabil dan mengantarkan piston melewati titik mati saat langkah selain usaha.',
+    pos:[-1.6,0.6,6.6], target:[0,1.2,1.7] },
+];
+
+/* ============================================================
+   SOAL KUIS
+============================================================ */
+const QUIZ = [
+  // ---- 5 soal pemahaman dasar ----
+  { q:'Urutan langkah kerja motor 4 tak yang benar adalah…', kat:'Dasar',
+    o:['Hisap – Kompresi – Usaha – Buang','Hisap – Usaha – Kompresi – Buang','Kompresi – Hisap – Usaha – Buang','Usaha – Hisap – Buang – Kompresi'], a:0,
+    bahas:'Urutan baku siklus 4 tak: Hisap → Kompresi → Usaha → Buang. Dari sini satu siklus = 4 langkah piston = 720°.' },
+  { q:'Pada langkah hisap, posisi piston bergerak dari…', kat:'Dasar',
+    o:['TMB ke TMA','TMA ke TMB','TMA ke TMA','TMB ke TMB'], a:1,
+    bahas:'Saat hisap, piston bergerak turun dari TMA ke TMB sehingga ruang silinder membesar dan campuran tersedot masuk.' },
+  { q:'Campuran udara–bahan bakar pada langkah usaha dibakar oleh percikan dari…', kat:'Dasar',
+    o:['Camshaft','Katup isap','Busi','Roda gaya'], a:2,
+    bahas:'Busi menghasilkan bunga api bertegangan tinggi tepat saat piston di TMA untuk membakar campuran.' },
+  { q:'Untuk menyelesaikan satu siklus 4 tak, poros engkol berputar…', kat:'Dasar',
+    o:['1 putaran (360°)','2 putaran (720°)','4 putaran','Setengah putaran'], a:1,
+    bahas:'Satu siklus 4 tak = 2 putaran poros engkol (720°). Camshaft hanya 1 putaran per siklus.' },
+  { q:'Saat langkah kompresi, kondisi kedua katup adalah…', kat:'Dasar',
+    o:['Keduanya terbuka','Isap terbuka, buang tertutup','Buang terbuka, isap tertutup','Keduanya tertutup'], a:3,
+    bahas:'Kedua katup tertutup rapat agar campuran dapat dimampatkan dan tekanan kompresi terbentuk.' },
+  // ---- 5 soal aplikasi ----
+  { q:'Komponen yang mengubah gerak naik-turun piston menjadi gerak rotasi adalah…', kat:'Aplikasi',
+    o:['Piston','Batang torak','Poros engkol','Busi'], a:2,
+    bahas:'Poros engkol (crankshaft) mengubah translasi piston menjadi putaran; inilah keluaran tenaga mesin.' },
+  { q:'Katup buang terbuka pada langkah…', kat:'Aplikasi',
+    o:['Hisap','Kompresi','Usaha','Buang'], a:3,
+    bahas:'Katup buang terbuka hanya saat langkah buang agar gas sisa pembakaran dapat keluar.' },
+  { q:'Fungsi utama ring piston adalah…', kat:'Aplikasi',
+    o:['Merapatkan ruang bakar & mencegah kebocoran','Membuat api pengapian','Menahan katup tetap tertutup','Mendinginkan oli'], a:0,
+    bahas:'Ring kompresi merapatkan ruang bakar agar kompresi tidak bocor; ring oli mengikis sisa oli di dinding silinder.' },
+  { q:'Jika ring piston aus/bocor, gejala yang paling mungkin muncul adalah…', kat:'Aplikasi',
+    o:['Tekanan kompresi turun dan tenaga mesin berkurang','Putaran camshaft bertambah cepat','Busi selalu dalam keadaan kering','Suara katup makin halus'], a:0,
+    bahas:'Kebocoran ring membuat campuran bocor / oli naik ke ruang bakar → kompresi lemah, tenaga turun, asap kebiruan.' },
+  { q:'Peran roda gaya (flywheel) pada poros engkol adalah…', kat:'Aplikasi',
+    o:['Menyimpan energi putar agar putaran stabil','Membakar campuran lebih sempurna','Mengatur buka-tutup katup','Membersihkan gas buang'], a:0,
+    bahas:'Roda gaya menyimpan energi inersia sehingga mesin tetap berputar mengantarkan piston melewati titik mati pada langkah selain usaha.' },
+  // ---- 5 soal analisis/HOTS ----
+  { q:'KASUS: Motor mengalami penurunan tenaga dan susah hidup setelah kompresi lemah ditemukan. Bagian dan proses apa yang perlu dianalisis oleh mekanik?', kat:'Analisis',
+    o:['Cek tekanan kompresi, kondisi ring & dudukan katup, lalu gas bocor di ruang bakar','Langsung ganti seluruh blok silinder tanpa pemeriksaan','Cukup membersihkan karburator saja','Menambah oli secara berlebihan'], a:0,
+    bahas:'Kompresi lemah berasal dari kebocoran (ring aus, katup tidak menutup, blok retak). Mekanik harus menganalisis sumber kebocoran secara sistematis, bukan mengabaikan diagnosis.' },
+  { q:'Sebuah motor 4 tak mengalami knocking (meletup-getar) saat akselerasi. Analisis yang paling tepat…', kat:'Analisis',
+    o:['Kemungkinan saat pengapian terlalu awal / campuran terlalu kurus / penumpukan kerak','Tinggi rendahnya jok kendaraan','Kekerasan ban kendaraan','Warna body kendaraan'], a:0,
+    bahas:'Knocking adalah pembakaran prematur/detonasi. Penyebab umum: timing pengapian terlalu maju, bahan bakar oktan rendah, campuran kurus, atau ruang bakar berkerak (panas berlebih).' },
+  { q:'Busi di salah satu silinder selalu basah oleh oli dan mesin bercampur asap biru. Evaluasi yang paling masuk akal…', kat:'Analisis',
+    o:['Ring piston / ring oli aus sehingga oli ikut terbakar di ruang bakar','Katup isap macet menyebabkan udara dingin','Timing pengapian terlambat terus-menerus','Roda gaya menyerap terlalu banyak panas'], a:0,
+    bahas:'Asap kebiruan + busi basah oli menandakan oli masuk ke ruang bakar — umumnya karena keausan ring piston atau laher batang longgar. Ini menyeret penurunan kompresi.' },
+  { q:'KASUS: Dibutuhkan pemeriksaan mekanisme katup. Agar diagnosis efisien, urutan yang benar…', kat:'Analisis',
+    o:['Cek celah katup & rabas (jika hidrolik cek tekanan) → cek kekerasan pegas → cek keausan dudukan/tepi mangkuk','Cek ban dulu, baru katup','Langsung bongkar tanpa mengukur celah','Cek oli transmisi terlebih dahulu'], a:0,
+    bahas:'Diagnosis bertahap: mulai dari yang mudah dan murah (celah katup, pegas, dudukan) baru membongkar bila perlu. Pola ini menghindari pembongkaran percuma.' },
+  { q:'KASUS: Mesin overheating berulang. Rancang pemeriksaan yang paling menyeluruh terkait proses kerja 4 tak…', kat:'Analisis',
+    o:['Cek pendinginan (air/kipas/termostat) → cek kompresi/pembakaran → cek timing & campuran → cek pelumasan','Hanya menambah air radiator setiap hari','Membesarkan knalpot','Mengganti audio kendaraan'], a:0,
+    bahas:'Overheating bisa bersumber dari sistem pendingin, pembakaran terlambat, campuran kurus, atau pelumasan. Pemeriksaan menyeluruh menghubungkan tiap subsistem yang berkaitan dengan panas mesin.' },
+];
+
+/* ============================================================
+   THREE.JS — SETUP  (HD · material PBR · pantulan · bayangan · bloom)
+============================================================ */
+let scene, camera, renderer, cssRenderer, controls;
+let composer = null, bloomPass = null;
+let hdOn = true;          // mode grafis HD (post-processing + resolusi penuh)
+let angProd = 0;        // sudut untuk animasi (0..720)
+let playing = true;
+let learningMode = false; // mode belajar per langkah
+let speedDeg = 160;     // derajat per detik
+let sparkT = 0;         // timer percikan busi
+let offHome = { p:null, t:null }; // kamera animasi
+let selection = null;
+let explodeTarget = 0;   // 0 = utuh, 1 = terpisah
+let explodeAmt = 0;      // nilai halus saat transisi
+
+const R = 1.0;          // jari-jari engkol (crank radius)
+const ROD = 3.2;        // panjang batang torak
+const BR = 1.1;         // jari-jari lubang silinder
+
+/* geometri mekanisme katup (DOHC, ruang bakar pent-roof) */
+const VLIFT   = 0.30;                 // angkat katup maksimum
+const VALVE_Y = 6.17;                 // titik tumpu katup
+const VTILT   = 0.22;                 // sudut kemiringan katup (rad)
+const V_TOP   = 1.10;                 // puncak tappet (lokal katup)
+const SPR_Y0  = 0.30, SPR_LEN = 0.52; // pegas katup
+const CAM_BASE= 0.30;                 // jari-jari lingkar dasar cam
+const CAMX    = 0.7 + V_TOP*Math.sin(VTILT);
+const CAMY    = VALVE_Y + V_TOP*Math.cos(VTILT) + CAM_BASE + 0.058;  // + celah katup
+const CHAMBER_TOP = 6.0;
+
+const viewEl = document.getElementById('view3d');
+
+function initScene(){
+  try {
+    scene = new THREE.Scene();
+    scene.background = makeBackdrop();
+
+    camera = new THREE.PerspectiveCamera(48, 1, 0.1, 120);
+    camera.position.set(6.2, 4.6, 8.2);
+
+    renderer = new THREE.WebGLRenderer({ antialias:true, powerPreference:'high-performance' });
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    viewEl.appendChild(renderer.domElement);
+
+    cssRenderer = new CSS2DRenderer();
+    cssRenderer.domElement.style.position = 'absolute';
+    cssRenderer.domElement.style.inset = '0';
+    cssRenderer.domElement.style.pointerEvents = 'none';
+    viewEl.appendChild(cssRenderer.domElement);
+  } catch(e){
+    document.getElementById('webglMsg').style.display='flex';
+    return false;
+  }
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.target.set(0, 4, 0);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.enableZoom = true;              // roda mouse & gerakan jari (pinch) bisa zoom
+  controls.zoomToCursor = false;
+  controls.minDistance = 3; controls.maxDistance = 24;
+  controls.maxPolarAngle = Math.PI * 0.92;
+  controls.update();
+
+  // pantulan lingkungan (studio) — membuat logam terlihat nyata
+  try {
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+    pmrem.dispose();
+  } catch(e){ /* tetap jalan tanpa env map */ }
+
+  // pencahayaan studio: key (berbayang) + rim + fill
+  scene.add(new THREE.HemisphereLight(0xcfe3ff, 0x1a2230, 0.55));
+  const key = new THREE.DirectionalLight(0xfff3e4, 2.4);
+  key.position.set(6, 14, 9);
+  key.target.position.set(0, 3, 0);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  const sc = key.shadow.camera;
+  sc.left = -8; sc.right = 8; sc.top = 10; sc.bottom = -7; sc.near = 2; sc.far = 40;
+  key.shadow.bias = -0.0003;
+  key.shadow.normalBias = 0.02;
+  scene.add(key, key.target);
+  const rim = new THREE.DirectionalLight(0x8fb8ff, 1.1);
+  rim.position.set(-7, 6, -6);
+  scene.add(rim);
+  const fill = new THREE.DirectionalLight(0xffd2a8, 0.45);
+  fill.position.set(-2, 1, 9);
+  scene.add(fill);
+
+  // lantai penerima bayangan (memudar ke tepi)
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(15, 96),
+    new THREE.MeshStandardMaterial({ color:0x121b2c, roughness:0.82, metalness:0.15,
+      transparent:true, alphaMap:radialAlphaTex(), depthWrite:false }));
+  ground.rotation.x = -Math.PI/2;
+  ground.position.y = -1.9;
+  ground.receiveShadow = true;
+  scene.add(ground);
+  const grid = new THREE.GridHelper(20, 20, 0x2a3a55, 0x1e2a40);
+  grid.position.y = -1.885;
+  grid.material.transparent = true; grid.material.opacity = 0.35;
+  scene.add(grid);
+
+  buildEngine();
+  buildComposer();
+  return true;
+}
+
+/* post-processing: MSAA + bloom (cahaya busi & api berpendar) */
+function buildComposer(){
+  try {
+    const rt = new THREE.WebGLRenderTarget(4, 4, { type:THREE.HalfFloatType, samples:4 });
+    composer = new EffectComposer(renderer, rt);
+    composer.addPass(new RenderPass(scene, camera));
+    bloomPass = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.38, 0.45, 1.0);
+    composer.addPass(bloomPass);
+    composer.addPass(new OutputPass());
+  } catch(e){
+    composer = null; hdOn = false;
+  }
+}
+
+/* ============================================================
+   TEKSTUR PROSEDURAL (tanpa file gambar eksternal)
+============================================================ */
+function makeBackdrop(){
+  const cv = document.createElement('canvas'); cv.width = cv.height = 512;
+  const g = cv.getContext('2d');
+  const gr = g.createRadialGradient(200, 150, 10, 256, 256, 430);
+  gr.addColorStop(0, '#2b3d5c'); gr.addColorStop(.5, '#141f34'); gr.addColorStop(1, '#070b14');
+  g.fillStyle = gr; g.fillRect(0, 0, 512, 512);
+  const t = new THREE.CanvasTexture(cv);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
+function radialAlphaTex(){
+  const cv = document.createElement('canvas'); cv.width = cv.height = 256;
+  const g = cv.getContext('2d');
+  const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128);
+  gr.addColorStop(0, '#fff'); gr.addColorStop(.45, '#bbb'); gr.addColorStop(1, '#000');
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256);
+  return new THREE.CanvasTexture(cv);
+}
+function finishTex(cv, rx, ry){
+  const t = new THREE.CanvasTexture(cv);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.repeat.set(rx || 1, ry || 1);
+  t.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  return t;
+}
+const clamp255 = v => v < 0 ? 0 : v > 255 ? 255 : v;
+/* butiran coran (cast aluminium) */
+function castTex(mean, amp, lowAmp, rep){
+  const N = 512;
+  const cv = document.createElement('canvas'); cv.width = cv.height = N;
+  const g = cv.getContext('2d');
+  const s = document.createElement('canvas'); s.width = s.height = 24;
+  const sg = s.getContext('2d'), sd = sg.createImageData(24, 24);
+  for(let i=0;i<24*24;i++){
+    const v = mean + (Math.random()-0.5)*lowAmp;
+    sd.data[i*4] = sd.data[i*4+1] = sd.data[i*4+2] = v; sd.data[i*4+3] = 255;
+  }
+  sg.putImageData(sd, 0, 0);
+  g.imageSmoothingEnabled = true;
+  g.drawImage(s, 0, 0, N, N);
+  const id = g.getImageData(0, 0, N, N), d = id.data;
+  for(let i=0;i<d.length;i+=4){
+    const n = (Math.random()-0.5)*amp + (Math.random() < 0.02 ? -amp*0.9 : 0); // pori-pori kecil
+    d[i] = d[i+1] = d[i+2] = clamp255(d[i] + n);
+  }
+  g.putImageData(id, 0, 0);
+  return finishTex(cv, rep, rep);
+}
+/* alur bubut / brushed (garis searah) */
+function streakTex(mean, amp, rx, ry){
+  const N = 512;
+  const cv = document.createElement('canvas'); cv.width = cv.height = N;
+  const g = cv.getContext('2d');
+  const id = g.createImageData(N, N), d = id.data;
+  for(let y=0;y<N;y++){
+    const row = mean + (Math.random()-0.5)*amp;
+    for(let x=0;x<N;x++){
+      const v = clamp255(row + (Math.random()-0.5)*amp*0.35);
+      const o = (y*N + x)*4;
+      d[o] = d[o+1] = d[o+2] = v; d[o+3] = 255;
+    }
+  }
+  g.putImageData(id, 0, 0);
+  return finishTex(cv, rx, ry);
+}
+/* pola honing silang pada dinding silinder */
+function honeTex(){
+  const N = 512;
+  const cv = document.createElement('canvas'); cv.width = cv.height = N;
+  const g = cv.getContext('2d');
+  g.fillStyle = 'rgb(112,112,112)'; g.fillRect(0, 0, N, N);
+  g.lineWidth = 1;
+  for(let i=0;i<220;i++){
+    const y0 = Math.random()*N*2 - N*0.5;
+    g.strokeStyle = 'rgba(175,175,175,'+(0.12+Math.random()*0.22)+')';
+    g.beginPath(); g.moveTo(0, y0); g.lineTo(N, y0 - N*0.42); g.stroke();
+    const y1 = Math.random()*N*2 - N*0.5;
+    g.strokeStyle = 'rgba(55,55,55,'+(0.12+Math.random()*0.22)+')';
+    g.beginPath(); g.moveTo(0, y1); g.lineTo(N, y1 + N*0.42); g.stroke();
+  }
+  return finishTex(cv, 3, 2);
+}
+
+let TX = null;
+function makeTextures(){
+  TX = {
+    cast:  castTex(168, 46, 50, 3),     // rata-rata kekasaran ±0.66
+    castF: castTex(150, 40, 40, 2),
+    turn:  streakTex(95, 70, 1, 6),     // alur bubut melingkar
+    brush: streakTex(110, 60, 2, 2),
+    hone:  honeTex(),
+  };
+}
+
+/* ============================================================
+   MATERIAL PBR — satu instans per komponen agar sorotan tidak bocor
+============================================================ */
+function makeMat(type){
+  const S = THREE.MeshStandardMaterial, P = THREE.MeshPhysicalMaterial;
+  let m;
+  switch(type){
+    case 'cast':     m = new S({ color:0xa4abb3, metalness:0.62, roughness:1.0, roughnessMap:TX.cast, bumpMap:TX.cast, bumpScale:1.4 }); break;
+    case 'castFin':  m = new S({ color:0xb3b9c0, metalness:0.62, roughness:1.0, roughnessMap:TX.castF, bumpMap:TX.castF, bumpScale:1.0 }); break;
+    case 'cutRed':   m = new S({ color:0xb3271f, metalness:0.15, roughness:0.48 }); break;
+    case 'liner':    m = new S({ color:0x9ba2aa, metalness:0.92, roughness:1.0, roughnessMap:TX.hone, bumpMap:TX.hone, bumpScale:0.5 }); break;
+    case 'steel':    m = new S({ color:0xc3c8ce, metalness:1.0, roughness:1.0, roughnessMap:TX.turn, bumpMap:TX.turn, bumpScale:0.25 }); break;
+    case 'polish':   m = new S({ color:0xe8ecf0, metalness:1.0, roughness:0.13 }); break;
+    case 'forged':   m = new S({ color:0x8c939b, metalness:0.95, roughness:0.85, roughnessMap:TX.cast, bumpMap:TX.cast, bumpScale:0.8 }); break;
+    case 'piston':   m = new S({ color:0xd8dce1, metalness:0.82, roughness:1.0, roughnessMap:TX.turn, bumpMap:TX.turn, bumpScale:0.2 }); break;
+    case 'ringDark': m = new S({ color:0x33373d, metalness:0.9, roughness:0.38 }); break;
+    case 'chrome':   m = new S({ color:0xdfe3e8, metalness:1.0, roughness:0.1 }); break;
+    case 'bronze':   m = new S({ color:0xb38a52, metalness:1.0, roughness:0.35 }); break;
+    case 'gasket':   m = new S({ color:0x2b2e33, metalness:0.25, roughness:0.75 }); break;
+    case 'ceramic':  m = new P({ color:0xf3f0e8, metalness:0.0, roughness:0.32, clearcoat:0.85, clearcoatRoughness:0.12 }); break;
+    case 'nickel':   m = new S({ color:0xcdd1d6, metalness:1.0, roughness:0.26 }); break;
+    case 'valveIn':  m = new S({ color:0xd9dee4, metalness:1.0, roughness:0.2 }); break;
+    case 'valveEx':  m = new S({ color:0xa59382, metalness:1.0, roughness:0.36 }); break;   // warna terbakar panas
+    case 'sprIn':    m = new S({ color:0xd1ad55, metalness:1.0, roughness:0.32 }); break;
+    case 'sprEx':    m = new S({ color:0x8a98a8, metalness:1.0, roughness:0.32 }); break;
+    case 'header':   m = new S({ color:0x8f7c66, metalness:0.92, roughness:1.0, roughnessMap:TX.brush, bumpMap:TX.brush, bumpScale:0.3 }); break;
+    case 'black':    m = new S({ color:0x15181c, metalness:0.4, roughness:0.6 }); break;
+    case 'flyw':     m = new S({ color:0x6a737d, metalness:0.95, roughness:1.0, roughnessMap:TX.turn, bumpMap:TX.turn, bumpScale:0.3 }); break;
+    case 'mark':     m = new S({ color:0xfbbf24, metalness:0.2, roughness:0.4, emissive:0x553300 }); break;
+    default:         m = new S({ color:0x999999, metalness:0.5, roughness:0.5 });
+  }
+  m.side = THREE.DoubleSide;
+  return m;
+}
+const _matCache = {};
+function M(key, type){
+  const k = key + '|' + type;
+  return _matCache[k] || (_matCache[k] = makeMat(type));
+}
+
+/* ============================================================
+   BANGUN MESIN — helper
+============================================================ */
+const parts = {};        // grup berlabel
+const pickMeshes = [];   // untuk raycast
+const PICKABLE = { 'blok':0,'kepala':0,'piston':0,'ring':0,'batang':0,'poros':0,
+  'katupIsap':0,'katupBuang':0,'busi':0,'nokenas':0,'rodaGaya':0 };
+
+function phongMat(color, opts){   // dipertahankan untuk kompatibilitas
+  return new THREE.MeshStandardMaterial(Object.assign({ color, metalness:0.6, roughness:0.4 }, opts||{}));
+}
+function storePickable(mesh, key){
+  mesh.userData.comp = key;
+  pickMeshes.push(mesh);
+}
+function orientBetween(mesh, a, b){
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), dir.normalize());
+  mesh.scale.set(1, len, 1);
+  return mesh;
+}
+function addPipe(a, b, r, mat){
+  const g = new THREE.CylinderGeometry(r, r, 1, 32, 1, true);
+  const m = new THREE.Mesh(g, mat);
+  scene.add(orientBetween(m, a, b));
+  return m;
+}
+function mk(geo, mat, key){
+  const m = new THREE.Mesh(geo, mat);
+  if(key) storePickable(m, key);
+  return m;
+}
+const V2 = arr => arr.map(p => new THREE.Vector2(p[0], p[1]));
+function lathe(points, seg, phiStart, phiLen){
+  return new THREE.LatheGeometry(V2(points), seg || 64, phiStart || 0, phiLen || Math.PI*2);
+}
+function extrudeZ(shape, depth, bevel, curveSeg){
+  const g = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled:!!bevel, bevelThickness:bevel||0,
+    bevelSize:bevel||0, bevelSegments:2, curveSegments:curveSeg||48 });
+  g.translate(0, 0, -depth/2);
+  return g;
+}
+function polyShape(pts){
+  const s = new THREE.Shape();
+  s.moveTo(pts[0][0], pts[0][1]);
+  for(let i=1;i<pts.length;i++) s.lineTo(pts[i][0], pts[i][1]);
+  s.closePath();
+  return s;
+}
+function annulus(ro, ri){
+  const s = new THREE.Shape(); s.absarc(0, 0, ro, 0, Math.PI*2, false);
+  const h = new THREE.Path();  h.absarc(0, 0, ri, 0, Math.PI*2, true);
+  s.holes.push(h);
+  return s;
+}
+/* bentuk "U" (setengah belakang) untuk sirip & flens — terpotong di z=0 (cutaway) */
+function uShape(halfW, back, rIn, corner){
+  const s = new THREE.Shape();
+  s.moveTo(-halfW, 0);
+  s.lineTo(-halfW, -back + corner);
+  s.quadraticCurveTo(-halfW, -back, -halfW + corner, -back);
+  s.lineTo(halfW - corner, -back);
+  s.quadraticCurveTo(halfW, -back, halfW, -back + corner);
+  s.lineTo(halfW, 0);
+  s.lineTo(rIn, 0);
+  s.absarc(0, 0, rIn, 0, -Math.PI, true);
+  s.lineTo(-halfW, 0);
+  return s;
+}
+/* pelat horizontal dari bentuk U: tebal th, permukaan atas di yTop */
+function hPlate(shape, th, yTop, mat, key){
+  const g = new THREE.ExtrudeGeometry(shape, { depth:th, bevelEnabled:false, curveSegments:48 });
+  const m = mk(g, mat, key);
+  m.rotation.x = Math.PI/2;     // bentuk-y → dunia-z, tebal → ke bawah
+  m.position.y = yTop;
+  return m;
+}
+/* bidang potong merah (cutaway) menghadap +z */
+function cutStrip(x0, x1, y0, y1, mat, key, z){
+  const m = mk(new THREE.PlaneGeometry(Math.abs(x1-x0), Math.abs(y1-y0)), mat, key);
+  m.position.set((x0+x1)/2, (y0+y1)/2, z == null ? 0.003 : z);
+  return m;
+}
+/* kurva heliks untuk pegas katup */
+class Helix extends THREE.Curve {
+  constructor(r, h, turns){ super(); this.r = r; this.h = h; this.turns = turns; }
+  getPoint(t, target = new THREE.Vector3()){
+    const a = t * this.turns * Math.PI * 2;
+    // ujung pegas dibuat rapat (closed coil) seperti pegas asli
+    const e = 0.06;
+    let y = t;
+    if(t < e) y = t * 0.45;
+    else if(t > 1-e) y = 1 - (1-t)*0.45;
+    else y = e*0.45 + (t - e) * (1 - 2*e*0.45) / (1 - 2*e);
+    return target.set(this.r*Math.cos(a), y*this.h, this.r*Math.sin(a));
+  }
+}
+/* profil cam: lingkar dasar + hidung sesuai kurva angkat katup */
+function camShape(base, lift){
+  const s = new THREE.Shape();
+  const N = 120, half = 47.5*Math.PI/180;
+  for(let i=0;i<=N;i++){
+    const a = i/N * Math.PI*2;
+    const d = Math.atan2(Math.sin(a), Math.cos(a));
+    const r = base + (Math.abs(d) < half ? lift*Math.cos(Math.PI*d/(2*half)) : 0);
+    const x = r*Math.cos(a), y = r*Math.sin(a);
+    if(i===0) s.moveTo(x, y); else s.lineTo(x, y);
+  }
+  return s;
+}
+
+function labelTxt(text, color){
+  const el = document.createElement('div');
+  el.className = 'lab';
+  Object.assign(el.style, {
+    background:'rgba(10,16,28,.85)', color:'#e2e8f0', padding:'2px 9px', borderRadius:'7px',
+    fontSize:'12px', fontWeight:600, whiteSpace:'nowrap', border:'1px solid #3b4b63', pointerEvents:'none'
+  });
+  if(color) el.style.borderColor = color;
+  el.textContent = text;
+  return new CSS2DObject(el);
+}
+
+/* ============================================================
+   POPUP FUNGSI — kartu di sisi kiri area 3D
+============================================================ */
+let infoTagEl = null;
+function showInfo(key){
+  if(!infoTagEl) infoTagEl = document.getElementById('infoTag');
+  const c = COMPONENTS.find(x=>x.key===key);
+  if(!c) return;
+  infoTagEl.innerHTML =
+    '<div class="itTop"><span class="itIco">'+c.ico+'</span><span class="itName">'+c.name+
+    '<span class="itEn">'+c.en+'</span></span></div>'+
+    '<div class="itFn">'+c.desc+'</div>';
+  infoTagEl.style.display = 'block';
+  infoTagEl.dataset.key = key;
+}
+function hideInfo(){
+  if(!infoTagEl) infoTagEl = document.getElementById('infoTag');
+  if(infoTagEl) infoTagEl.style.display = 'none';
+}
+
+function buildEngine(){
+  makeTextures();
+
+  /* ==========================================================
+     BLOK SILINDER + BAK ENGKOL (model potong / cutaway di z=0)
+  ========================================================== */
+  const blockG = new THREE.Group();
+  blockG.userData.comp = 'blok';
+  const mCast = M('blok','cast'), mFin = M('blok','castFin'), mCut = M('blok','cutRed'), mLiner = M('blok','liner');
+
+  // dinding belakang bak engkol
+  const ccShape = new THREE.Shape();
+  ccShape.moveTo(-1.75, 1.9); ccShape.lineTo(-1.75, 0);
+  ccShape.absarc(0, 0, 1.75, Math.PI, Math.PI*2, false);
+  ccShape.lineTo(1.75, 1.9); ccShape.lineTo(-1.75, 1.9);
+  const ccBack = mk(new THREE.ExtrudeGeometry(ccShape, { depth:0.2, bevelEnabled:true, bevelThickness:0.03,
+    bevelSize:0.03, bevelSegments:2, curveSegments:64 }), mCast, 'blok');
+  ccBack.position.z = -1.78;
+  blockG.add(ccBack);
+  // dudukan bantalan utama
+  const boss = mk(new THREE.CylinderGeometry(0.5, 0.56, 0.16, 48), M('blok','steel'), 'blok');
+  boss.rotation.x = Math.PI/2; boss.position.z = -1.5;
+  blockG.add(boss);
+  // cangkang bawah (setengah silinder) + dinding samping
+  const shellO = mk(new THREE.CylinderGeometry(1.75, 1.75, 1.75, 72, 1, true, -Math.PI/2, Math.PI), mCast, 'blok');
+  shellO.rotation.x = Math.PI/2; shellO.position.z = -0.875;
+  const shellI = mk(new THREE.CylinderGeometry(1.6, 1.6, 1.75, 72, 1, true, -Math.PI/2, Math.PI), mCast, 'blok');
+  shellI.rotation.x = Math.PI/2; shellI.position.z = -0.875;
+  const shellCut = mk(new THREE.RingGeometry(1.6, 1.75, 72, 1, Math.PI, Math.PI), mCut, 'blok');
+  shellCut.position.z = 0.003;
+  blockG.add(shellO, shellI, shellCut);
+  for(const sx of [-1, 1]){
+    const wall = mk(new THREE.BoxGeometry(0.15, 1.9, 1.75), mCast, 'blok');
+    wall.position.set(sx*1.675, 0.95, -0.875);
+    blockG.add(wall, cutStrip(sx*1.6, sx*1.75, 0, 1.9, mCut, 'blok'));
+  }
+  // flens atas bak engkol (dudukan silinder)
+  blockG.add(hPlate(uShape(1.85, 1.85, BR, 0.3), 0.16, 2.0, mCast, 'blok'));
+  for(const sx of [-1, 1]) blockG.add(cutStrip(sx*BR, sx*1.85, 1.84, 2.0, mCut, 'blok'));
+
+  // liner silinder (setengah belakang, pola honing) + selubung luar
+  const LY0 = 1.6, LY1 = 5.95;
+  const liner = mk(new THREE.CylinderGeometry(BR, BR, LY1-LY0, 96, 1, true, Math.PI/2, Math.PI), mLiner, 'blok');
+  liner.position.y = (LY0+LY1)/2;
+  const barrel = mk(new THREE.CylinderGeometry(1.3, 1.3, LY1-2.0, 96, 1, true, Math.PI/2, Math.PI), mCast, 'blok');
+  barrel.position.y = (2.0+LY1)/2;
+  blockG.add(liner, barrel);
+  for(const sx of [-1, 1]) blockG.add(cutStrip(sx*BR, sx*1.3, 2.0, LY1, mCut, 'blok'));
+
+  // sirip pendingin (air-cooled) — rapat & tipis seperti mesin motor asli
+  for(let i=0;i<12;i++){
+    const yTop = 2.32 + i*0.3;
+    const hw = 1.95 - Math.abs(i-6)*0.012;
+    blockG.add(hPlate(uShape(hw, 1.8, 1.3, 0.38), 0.085, yTop, mFin, 'blok'));
+    for(const sx of [-1, 1]) blockG.add(cutStrip(sx*1.3, sx*hw, yTop-0.085, yTop, mCut, 'blok'));
+  }
+  // flens atas silinder (deck)
+  blockG.add(hPlate(uShape(1.85, 1.75, BR, 0.3), 0.12, LY1, mCast, 'blok'));
+  for(const sx of [-1, 1]) blockG.add(cutStrip(sx*BR, sx*1.85, LY1-0.12, LY1, mCut, 'blok'));
+
+  scene.add(blockG);
+  const lbBlok = labelTxt('Blok Silinder'); lbBlok.position.set(-1.3, 5.35, 0.9);
+  blockG.add(lbBlok);
+
+  /* ---- Lubang silinder: kaca tipis setengah depan ---- */
+  const bore = new THREE.Mesh(new THREE.CylinderGeometry(BR, BR, 4.0, 96, 1, true, -Math.PI/2, Math.PI),
+    new THREE.MeshPhysicalMaterial({ color:0xaaccee, metalness:0, roughness:0.05, transparent:true, opacity:0.07,
+      side:THREE.DoubleSide, depthWrite:false }));
+  bore.position.set(0, 3.95, 0);
+  scene.add(bore);
+  // cincin penanda TMA & TMB
+  const mkMat = new THREE.MeshStandardMaterial({ color:0x38bdf8, emissive:0x0d4a6e, transparent:true, opacity:.8, metalness:0.2, roughness:0.4 });
+  const mkT = new THREE.Mesh(new THREE.TorusGeometry(BR+0.03, 0.025, 12, 96), mkMat);
+  mkT.position.set(0, 5.0, 0); mkT.rotation.x = Math.PI/2;
+  const mkB = mkT.clone(); mkB.position.y = 3.0;
+  const lT = labelTxt('TMA'); lT.position.set(0,5.25,1.25);
+  const lB = labelTxt('TMB'); lB.position.set(0,2.75,1.25);
+  scene.add(mkT,mkB,lT,lB);
+
+  /* ==========================================================
+     KEPALA SILINDER (pent-roof, saluran isap/buang, tutup katup)
+  ========================================================== */
+  const headG = new THREE.Group(); headG.userData.comp='kepala';
+  const mHead = M('kepala','cast'), mHeadCut = M('kepala','cutRed');
+  const roofC = 6.0 + 0.224*1.1;    // puncak atap ruang bakar
+  // bagian atas (di atas saluran)
+  const hUp = new THREE.Shape();
+  hUp.moveTo(-1.85, 6.8);
+  hUp.quadraticCurveTo(-0.62, 6.72, -0.19, 6.0 + 0.224*0.91);
+  hUp.lineTo(0, roofC);
+  hUp.lineTo(0.26, 6.0 + 0.224*0.84);
+  hUp.quadraticCurveTo(0.62, 6.72, 1.85, 6.8);
+  hUp.lineTo(1.85, 7.05); hUp.lineTo(-1.85, 7.05); hUp.lineTo(-1.85, 6.8);
+  // irisan bawah saluran (kiri & kanan)
+  const hL = new THREE.Shape();
+  hL.moveTo(-1.85, 6.0); hL.lineTo(-1.12, 6.0); hL.quadraticCurveTo(-1.5, 6.06, -1.85, 6.35); hL.lineTo(-1.85, 6.0);
+  const hR = new THREE.Shape();
+  hR.moveTo(1.85, 6.0); hR.lineTo(1.85, 6.35); hR.quadraticCurveTo(1.5, 6.06, 1.12, 6.0); hR.lineTo(1.85, 6.0);
+  const headShapes = [hUp, hL, hR];
+  const headBody = mk(new THREE.ExtrudeGeometry(headShapes, { depth:1.7, bevelEnabled:false, curveSegments:32 }), mHead, 'kepala');
+  headBody.position.z = -1.7;
+  const headCutF = mk(new THREE.ShapeGeometry(headShapes, 32), mHeadCut, 'kepala');
+  headCutF.position.z = 0.003;
+  headG.add(headBody, headCutF);
+  // sirip kepala silinder (sisi belakang)
+  for(let i=0;i<4;i++){
+    const f = mk(new THREE.BoxGeometry(3.9, 0.07, 0.5), M('kepala','castFin'), 'kepala');
+    f.position.set(0, 6.25 + i*0.24, -1.92);
+    headG.add(f);
+  }
+  // paking kepala silinder
+  const gask = mk(new THREE.ExtrudeGeometry(uShape(1.85, 1.75, BR+0.01, 0.3), { depth:0.05, bevelEnabled:false, curveSegments:48 }),
+    M('kepala','gasket'), 'kepala');
+  gask.rotation.x = Math.PI/2; gask.position.y = 6.0;
+  headG.add(gask);
+
+  // tutup katup / rumah noken as (rangka U terbalik, berongga)
+  const cTop = CAMY + 0.80, cIn = 0.12, cW = 1.85;
+  const cover = new THREE.Shape();
+  cover.moveTo(-cW, 7.05); cover.lineTo(-cW, cTop-0.35);
+  cover.quadraticCurveTo(-cW, cTop, -cW+0.35, cTop);
+  cover.lineTo(cW-0.35, cTop); cover.quadraticCurveTo(cW, cTop, cW, cTop-0.35);
+  cover.lineTo(cW, 7.05); cover.lineTo(cW-cIn, 7.05); cover.lineTo(cW-cIn, cTop-0.35);
+  cover.quadraticCurveTo(cW-cIn, cTop-cIn, cW-0.35, cTop-cIn);
+  cover.lineTo(-cW+0.35, cTop-cIn); cover.quadraticCurveTo(-cW+cIn, cTop-cIn, -cW+cIn, cTop-0.35);
+  cover.lineTo(-cW+cIn, 7.05); cover.lineTo(-cW, 7.05);
+  const coverM = mk(new THREE.ExtrudeGeometry(cover, { depth:1.6, bevelEnabled:false, curveSegments:24 }), mHead, 'kepala');
+  coverM.position.z = -1.6;
+  const coverCut = mk(new THREE.ShapeGeometry(cover, 24), mHeadCut, 'kepala');
+  coverCut.position.z = 0.003;
+  const coverBackS = new THREE.Shape();
+  coverBackS.moveTo(-cW, 7.05); coverBackS.lineTo(-cW, cTop-0.35);
+  coverBackS.quadraticCurveTo(-cW, cTop, -cW+0.35, cTop);
+  coverBackS.lineTo(cW-0.35, cTop); coverBackS.quadraticCurveTo(cW, cTop, cW, cTop-0.35);
+  coverBackS.lineTo(cW, 7.05); coverBackS.lineTo(-cW, 7.05);
+  const coverBack = mk(new THREE.ExtrudeGeometry(coverBackS, { depth:0.1, bevelEnabled:false, curveSegments:24 }), mHead, 'kepala');
+  coverBack.position.z = -1.7;
+  headG.add(coverM, coverCut, coverBack);
+
+  scene.add(headG);
+  const lbKep = labelTxt('Kepala Silinder'); lbKep.position.set(1.5, 6.7, 1.1);
+  headG.add(lbKep);
+
+  /* ---- Campuran / muatan dalam silinder ---- */
+  const mixMat = new THREE.MeshBasicMaterial({ color:0x88bbff, transparent:true, opacity:0.35, depthWrite:false });
+  const mix = new THREE.Mesh(new THREE.CylinderGeometry(1.07,1.07,1,64,1,true), mixMat);
+  mix.material.side = THREE.DoubleSide;
+  scene.add(mix);
+
+  /* ==========================================================
+     KATUP (kepala katup bubut + batang + pegas heliks + retainer + tappet)
+  ========================================================== */
+  function buildValve(x, tilt, compKey, Rv, vType, sType){
+    const asm = new THREE.Group();
+    asm.userData.comp = compKey;
+    asm.position.set(x, VALVE_Y, 0);
+    asm.rotation.z = tilt;
+    const inner = new THREE.Group();
+    // katup (profil tulip hasil bubut)
+    const valve = mk(lathe([[0,-0.10],[Rv*0.97,-0.10],[Rv,-0.082],[Rv*0.93,-0.035],[Rv*0.8,-0.005],
+      [Rv*0.5,0.04],[0.2,0.12],[0.1,0.22],[0.066,0.34],[0.066,0.93],[0.052,0.95],[0.052,0.99],
+      [0.066,1.01],[0.066,1.06],[0,1.06]], 72), M(compKey, vType), compKey);
+    // retainer + collet
+    const ret = mk(lathe([[0.07,0.82],[0.25,0.82],[0.27,0.845],[0.27,0.88],[0.12,0.9],[0.07,0.9]], 48),
+      M(compKey,'steel'), compKey);
+    // tappet mangkuk (bucket) — didorong langsung oleh cam
+    const bucket = mk(lathe([[0.2,0.9],[0.235,0.9],[0.245,0.915],[0.245,1.085],[0.232,V_TOP],[0,V_TOP]], 56),
+      M(compKey,'polish'), compKey);
+    inner.add(valve, ret, bucket);
+    asm.add(inner);
+    // pegas katup (heliks) — memendek saat katup membuka
+    const spring = mk(new THREE.TubeGeometry(new Helix(0.2, SPR_LEN, 6.5), 300, 0.028, 8, false), M(compKey, sType), compKey);
+    spring.position.y = SPR_Y0;
+    asm.add(spring);
+    // dudukan katup (seat insert) & pengarah katup
+    const seat = new THREE.Mesh(new THREE.TorusGeometry(Rv*0.93, 0.035, 12, 64), M('x','bronze'));
+    seat.rotation.x = Math.PI/2; seat.position.y = -0.045;
+    const guide = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.4, 24, 1, true), M('x','bronze'));
+    guide.position.y = 0.5;
+    asm.add(seat, guide);
+    asm.userData.inner = inner;     // digerakkan saat katup membuka
+    asm.userData.spring = spring;
+    scene.add(asm);
+    return asm;
+  }
+  const katupIsap  = buildValve(-0.7,  VTILT, 'katupIsap',  0.50, 'valveIn', 'sprIn');
+  const katupBuang = buildValve( 0.7, -VTILT, 'katupBuang', 0.43, 'valveEx', 'sprEx');
+  parts.katupIsap = katupIsap; parts.katupBuang = katupBuang;
+  const lbI = labelTxt('Katup Isap','#4aa3ff'); lbI.position.set(0, 0.7, 1.5); katupIsap.add(lbI);
+  const lbE = labelTxt('Katup Buang','#ffb0a0'); lbE.position.set(0, 0.7, 1.5); katupBuang.add(lbE);
+
+  /* ==========================================================
+     SALURAN ISAP & BUANG (manifold, karburator, knalpot) + aliran
+  ========================================================== */
+  const PORT_Y = 6.575;
+  // manifold isap + karburator + corong udara
+  const mInt = M('x','cast');
+  const manI = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.8, 40), mInt);
+  manI.rotation.z = Math.PI/2; manI.position.set(-2.25, PORT_Y, 0);
+  const carb = new THREE.Mesh(new THREE.CylinderGeometry(0.33, 0.33, 0.55, 40), M('x','steel'));
+  carb.rotation.z = Math.PI/2; carb.position.set(-2.92, PORT_Y, 0);
+  const carbBowl = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.24, 0.38, 32), M('x','steel'));
+  carbBowl.position.set(-2.92, PORT_Y-0.42, 0);
+  const bell = new THREE.Mesh(lathe([[0.29,0],[0.31,0.12],[0.38,0.24],[0.44,0.28]], 40), M('x','polish'));
+  bell.rotation.z = Math.PI/2; bell.position.set(-3.19, PORT_Y, 0);
+  const flI = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.62, 0.72), mInt);
+  flI.position.set(-1.9, PORT_Y, -0.1);
+  scene.add(manI, carb, carbBowl, bell, flI);
+  // knalpot (header) — melengkung ke bawah
+  const exCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(1.86, PORT_Y, 0), new THREE.Vector3(2.5, 6.62, 0), new THREE.Vector3(3.05, 6.35, 0),
+    new THREE.Vector3(3.32, 5.7, 0), new THREE.Vector3(3.38, 4.8, 0) ]);
+  const header = new THREE.Mesh(new THREE.TubeGeometry(exCurve, 80, 0.21, 32, false), M('x','header'));
+  const flE = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.62, 0.72), M('x','steel'));
+  flE.position.set(1.9, PORT_Y, -0.1);
+  const exEnd = new THREE.Mesh(new THREE.TorusGeometry(0.21, 0.03, 10, 40), M('x','header'));
+  exEnd.rotation.x = Math.PI/2; exEnd.position.set(3.38, 4.8, 0);
+  scene.add(header, flE, exEnd);
+  // kanal aliran (bercahaya lembut saat katup terbuka)
+  const matIn = new THREE.MeshStandardMaterial({ color:0x4aa3ff, emissive:0x1b5fa8, transparent:true, opacity:0.2,
+    depthWrite:false, roughness:0.3, metalness:0 });
+  const flowIn = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-1.86, PORT_Y, 0), new THREE.Vector3(-1.3, 6.48, 0), new THREE.Vector3(-0.72, 6.27, 0)]), 40, 0.17, 20, false), matIn);
+  const matEx = new THREE.MeshStandardMaterial({ color:0xff8a66, emissive:0xa83a1b, transparent:true, opacity:0.2,
+    depthWrite:false, roughness:0.3, metalness:0 });
+  const flowEx = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
+    new THREE.Vector3(0.72, 6.27, 0), new THREE.Vector3(1.3, 6.48, 0), new THREE.Vector3(1.86, PORT_Y, 0)]), 40, 0.17, 20, false), matEx);
+  scene.add(flowIn, flowEx);
+  // kerucut panah
+  const pIn1 = new THREE.Vector3(-3.42, PORT_Y, 0);
+  const arrow = new THREE.Mesh(new THREE.ConeGeometry(0.22,0.5,24), new THREE.MeshBasicMaterial({ color:0x4aa3ff }));
+  orientBetween(arrow, pIn1.clone().add(new THREE.Vector3(-0.6,0,0)), pIn1);
+  arrow.userData.arrowIn = true; arrow.userData.tw = 0;
+  const pEx1 = new THREE.Vector3(3.38, 4.62, 0);
+  const arrowEx = new THREE.Mesh(new THREE.ConeGeometry(0.22,0.5,24), new THREE.MeshBasicMaterial({ color:0xff8a66 }));
+  orientBetween(arrowEx, pEx1, pEx1.clone().add(new THREE.Vector3(0,-0.6,0)));
+  arrowEx.userData.arrowEx = true; arrowEx.userData.tw = 0;
+
+  /* ==========================================================
+     BUSI (isolator keramik berusuk, heksagon, ulir, elektroda)
+  ========================================================== */
+  const busiG = new THREE.Group(); busiG.userData.comp='busi';
+  const plug = new THREE.Group();
+  plug.position.set(0, 6.2, 0);
+  plug.rotation.x = 0.6;               // dipasang miring ke depan
+  const thr = [[0.08,0.18],[0.118,0.18]];
+  for(let y=0.19, k=0; y<0.62; y+=0.0225, k++) thr.push([k%2 ? 0.118 : 0.136, y]);
+  thr.push([0.118,0.62],[0.08,0.62]);
+  const pShell  = mk(lathe(thr, 48), M('busi','nickel'), 'busi');
+  const pWasher = mk(new THREE.TorusGeometry(0.155, 0.024, 10, 40), M('busi','steel'), 'busi');
+  pWasher.rotation.x = Math.PI/2; pWasher.position.y = 0.645;
+  const pHex    = mk(new THREE.CylinderGeometry(0.21, 0.21, 0.2, 6), M('busi','nickel'), 'busi');
+  pHex.position.y = 0.77;
+  const pCrimp  = mk(lathe([[0.1,0.87],[0.17,0.87],[0.17,0.92],[0.13,0.97],[0.1,0.97]], 40), M('busi','nickel'), 'busi');
+  const ins = [[0.1,0.95]];
+  for(let i=0;i<=40;i++){ const y = 0.96 + i*0.0145; ins.push([0.098 + 0.014*Math.pow(Math.abs(Math.cos(i/40*Math.PI*5)),0.7), y]); }
+  ins.push([0.07,1.6],[0.045,1.62],[0,1.62]);
+  const pIns    = mk(lathe(ins, 48), M('busi','ceramic'), 'busi');
+  const pNose   = mk(lathe([[0,0.06],[0.03,0.07],[0.06,0.18],[0.08,0.3],[0.08,0.62]], 32), M('busi','ceramic'), 'busi');
+  const pCenter = mk(new THREE.CylinderGeometry(0.018, 0.018, 0.07, 12), M('busi','nickel'), 'busi');
+  pCenter.position.y = 0.075;
+  const pGv     = mk(new THREE.BoxGeometry(0.04, 0.2, 0.05), M('busi','nickel'), 'busi');
+  pGv.position.set(0.11, 0.085, 0);
+  const pGh     = mk(new THREE.BoxGeometry(0.15, 0.035, 0.05), M('busi','nickel'), 'busi');
+  pGh.position.set(0.055, -0.005, 0);
+  const pTerm   = mk(new THREE.CylinderGeometry(0.04, 0.04, 0.16, 16), M('busi','nickel'), 'busi');
+  pTerm.position.y = 1.68;
+  const pNut    = mk(lathe([[0,1.74],[0.06,1.74],[0.068,1.77],[0.06,1.8],[0,1.8]], 32), M('busi','nickel'), 'busi');
+  plug.add(pShell, pWasher, pHex, pCrimp, pIns, pNose, pCenter, pGv, pGh, pTerm, pNut);
+  busiG.add(plug);
+  scene.add(busiG);
+  const lbBusi = labelTxt('Busi','#ffd27f'); lbBusi.position.set(0, 7.85, 1.25);
+  busiG.add(lbBusi);
+
+  // glow percikan
+  const glowTex = (()=>{
+    const cv=document.createElement('canvas'); cv.width=cv.height=128;
+    const g=cv.getContext('2d');
+    const gr=g.createRadialGradient(64,64,0,64,64,64);
+    gr.addColorStop(0,'rgba(255,255,255,1)'); gr.addColorStop(.25,'rgba(255,230,140,.95)');
+    gr.addColorStop(.6,'rgba(255,150,60,.4)'); gr.addColorStop(1,'rgba(255,100,40,0)');
+    g.fillStyle=gr; g.fillRect(0,0,128,128);
+    return new THREE.CanvasTexture(cv);
+  })();
+  const sparkGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map:glowTex, transparent:true, opacity:0,
+    depthWrite:false, blending:THREE.AdditiveBlending }));
+  sparkGlow.material.color.setRGB(6, 4.5, 2.2);      // HDR → berpendar lewat bloom
+  sparkGlow.position.set(0, 6.18, 0.03); sparkGlow.scale.set(0.1,0.1,1);
+  scene.add(sparkGlow);
+  const flashLight = new THREE.PointLight(0xffaa55, 0, 9, 2);
+  flashLight.position.set(0, 5.8, 0.4);
+  scene.add(flashLight);
+  const flame = new THREE.Mesh(new THREE.SphereGeometry(0.4, 32, 20),
+    new THREE.MeshBasicMaterial({ color:0xff7722, transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending }));
+  flame.material.color.setRGB(2.6, 0.95, 0.25);
+  flame.position.set(0, 4.6, 0);
+  scene.add(flame);
+
+  /* ==========================================================
+     NOKEN AS (DOHC: 2 poros sejajar engkol, profil cam asli)
+  ========================================================== */
+  const camG = new THREE.Group(); camG.userData.comp='nokenas';
+  for(const sx of [-1, 1]){
+    const ax = mk(new THREE.CylinderGeometry(0.13, 0.13, 1.95, 32), M('nokenas','steel'), 'nokenas');
+    ax.rotation.x = Math.PI/2; ax.position.set(sx*CAMX, CAMY, -0.67);
+    camG.add(ax);
+  }
+  function camLobe(x, phase){
+    const d = new THREE.Group();
+    d.position.set(x, CAMY, 0);
+    const lobe = mk(extrudeZ(camShape(CAM_BASE - 0.02, VLIFT), 0.26, 0.02, 120), M('nokenas','polish'), 'nokenas');
+    lobe.rotation.z = phase;
+    d.add(lobe);
+    // jurnal bantalan noken as
+    for(const z of [-0.55, -1.3]){
+      const j = mk(new THREE.CylinderGeometry(0.22, 0.22, 0.18, 40), M('nokenas','steel'), 'nokenas');
+      j.rotation.x = Math.PI/2; j.position.z = z;
+      d.add(j);
+    }
+    scene.add(d);
+    return d;
+  }
+  // fase hidung cam: katup isap puncak di 95° engkol, buang di 610° engkol
+  const camI = camLobe(-CAMX, -137.5*Math.PI/180);
+  const camE = camLobe( CAMX,  -35.0*Math.PI/180);
+  parts.camI = camI; parts.camE = camE;
+  scene.add(camG);
+  const lbCamL = labelTxt('Camshaft','#9aa4ad'); lbCamL.position.set(0, CAMY+0.45, 1.1);
+  camG.add(lbCamL);
+  parts.cams = [camI, camE];
+
+  /* ==========================================================
+     PISTON (alur ring, mahkota, boss pena) + RING
+  ========================================================== */
+  const PK = 1.11;   // skala radial agar celah piston–silinder realistis
+  const pistG = new THREE.Group(); pistG.userData.comp='piston';
+  const pp = [[0,0.72],[0.80,0.72],[0.84,0.6],[0.86,-0.30],[0.968,-0.30],[0.972,-0.1],[0.974,0.43],
+    [0.974,0.45],[0.90,0.45],[0.90,0.55],[0.974,0.55],
+    [0.974,0.63],[0.905,0.63],[0.905,0.69],[0.974,0.69],
+    [0.974,0.77],[0.905,0.77],[0.905,0.83],[0.974,0.83],
+    [0.976,0.90],[0.955,0.935],[0.85,0.945],[0.4,0.955],[0,0.958]].map(p=>[p[0]*PK, p[1]]);
+  const body = mk(lathe(pp, 112), M('piston','piston'), 'piston');
+  // boss pena piston & pena
+  for(const sz of [-1, 1]){
+    const b = mk(new THREE.CylinderGeometry(0.25, 0.27, 0.26, 32), M('piston','piston'), 'piston');
+    b.rotation.x = Math.PI/2; b.position.z = sz*0.62;
+    pistG.add(b);
+  }
+  const pin = mk(new THREE.CylinderGeometry(0.13,0.13,1.5,32), M('piston','polish'), 'piston');
+  pin.rotation.x = Math.PI/2;
+  pistG.add(body, pin);
+  const rings = new THREE.Group(); rings.userData.comp='ring';
+  const ringProf = (yc, h, ri, ro) => [[ri,yc-h/2],[ro,yc-h/2],[ro,yc+h/2],[ri,yc+h/2],[ri,yc-h/2]];
+  const r1 = mk(lathe(ringProf(0.80, 0.055, 0.91*PK, 0.983*PK), 112), M('ring','chrome'), 'ring');
+  const r2 = mk(lathe(ringProf(0.66, 0.055, 0.91*PK, 0.983*PK), 112), M('ring','ringDark'), 'ring');
+  const r3a = mk(lathe(ringProf(0.47, 0.02, 0.91*PK, 0.983*PK), 112), M('ring','chrome'), 'ring');
+  const r3b = mk(lathe(ringProf(0.53, 0.02, 0.91*PK, 0.983*PK), 112), M('ring','chrome'), 'ring');
+  const r3c = mk(lathe(ringProf(0.50, 0.08, 0.90*PK, 0.965*PK), 112), M('ring','ringDark'), 'ring');
+  rings.add(r1, r2, r3a, r3b, r3c);
+  pistG.add(rings);
+  scene.add(pistG);
+  parts.piston = pistG; parts.rings = rings;
+  const lbP = labelTxt('Piston'); lbP.position.set(0, 1.9, 0);
+  pistG.add(lbP);
+
+  /* ==========================================================
+     BATANG TORAK (profil I-beam, big-end + baut)
+  ========================================================== */
+  const rodG = new THREE.Group(); rodG.userData.comp='batang';
+  const mRod = M('batang','forged');
+  const bigEye = mk(extrudeZ(annulus(0.46, 0.245), 0.26, 0.02), mRod, 'batang');
+  bigEye.position.y = -ROD/2;
+  const smallEye = mk(extrudeZ(annulus(0.25, 0.135), 0.22, 0.02), mRod, 'batang');
+  smallEye.position.y = ROD/2;
+  const y0 = -ROD/2 + 0.35, y1 = ROD/2 - 0.18;
+  const web = mk(extrudeZ(polyShape([[-0.17,y0],[0.17,y0],[0.1,y1],[-0.1,y1]]), 0.09, 0.01), mRod, 'batang');
+  const flL = mk(extrudeZ(polyShape([[-0.21,y0],[-0.13,y0],[-0.075,y1],[-0.135,y1]]), 0.22, 0.015), mRod, 'batang');
+  const flR = mk(extrudeZ(polyShape([[0.13,y0],[0.21,y0],[0.135,y1],[0.075,y1]]), 0.22, 0.015), mRod, 'batang');
+  const bush = mk(new THREE.CylinderGeometry(0.245, 0.245, 0.3, 40, 1, true), M('batang','bronze'), 'batang');
+  bush.rotation.x = Math.PI/2; bush.position.y = -ROD/2;
+  rodG.add(bigEye, smallEye, web, flL, flR, bush);
+  for(const sx of [-1, 1]){
+    const bolt = mk(new THREE.CylinderGeometry(0.045, 0.045, 0.66, 16), M('batang','steel'), 'batang');
+    bolt.position.set(sx*0.36, -ROD/2, 0);
+    const nut = mk(new THREE.CylinderGeometry(0.085, 0.085, 0.08, 6), M('batang','steel'), 'batang');
+    nut.position.set(sx*0.36, -ROD/2 - 0.31, 0);
+    const head = mk(new THREE.CylinderGeometry(0.08, 0.08, 0.07, 6), M('batang','steel'), 'batang');
+    head.position.set(sx*0.36, -ROD/2 + 0.31, 0);
+    const split = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.012, 0.31), M('x','black'));
+    split.position.set(sx*0.355, -ROD/2, 0);
+    rodG.add(bolt, nut, head, split);
+  }
+  scene.add(rodG);
+  parts.rod = rodG;
+  const lbR = labelTxt('Batang Torak'); lbR.position.set(0, 1.1, 1.5);
+  scene.add(lbR);
+
+  /* ==========================================================
+     POROS ENGKOL (pipi engkol + bobot penyeimbang) + RODA GAYA
+  ========================================================== */
+  const crankG = new THREE.Group(); crankG.userData.comp='poros';
+  const webS = new THREE.Shape();
+  webS.moveTo(-0.42, R);
+  webS.absarc(0, R, 0.42, Math.PI, 0, true);
+  webS.lineTo(Math.cos(-Math.PI/6), Math.sin(-Math.PI/6));
+  webS.absarc(0, 0, 1.0, -Math.PI/6, -5*Math.PI/6, true);
+  webS.lineTo(-0.42, R);
+  for(const sz of [-1, 1]){
+    const w = mk(extrudeZ(webS, 0.26, 0.02, 64), M('poros','forged'), 'poros');
+    w.position.z = sz*0.35;
+    crankG.add(w);
+  }
+  const jF = mk(new THREE.CylinderGeometry(0.3, 0.3, 1.2, 48), M('poros','polish'), 'poros');
+  jF.rotation.x = Math.PI/2; jF.position.z = 1.1;
+  const jB = mk(new THREE.CylinderGeometry(0.3, 0.3, 1.1, 48), M('poros','polish'), 'poros');
+  jB.rotation.x = Math.PI/2; jB.position.z = -1.05;
+  const cpin = mk(new THREE.CylinderGeometry(0.22, 0.22, 0.62, 40), M('poros','polish'), 'poros');
+  cpin.rotation.x = Math.PI/2; cpin.position.set(0, R, 0);
+  const oilHole = new THREE.Mesh(new THREE.CircleGeometry(0.035, 16), M('x','black'));
+  oilHole.position.set(0, R + 0.222, 0.08); oilHole.rotation.x = -Math.PI/2;
+  crankG.add(jF, jB, cpin, oilHole);
+
+  // roda gaya (flywheel) bubut + ring gear bergigi + lubang peringan
+  const flyProf = [[0.3,-0.25],[0.52,-0.25],[0.58,-0.08],[1.22,-0.08],[1.28,-0.18],[1.5,-0.18],[1.53,-0.15],
+    [1.53,0.15],[1.5,0.18],[1.28,0.18],[1.22,0.08],[0.58,0.08],[0.52,0.25],[0.3,0.25],[0.3,-0.25]];
+  const fly = mk(lathe(flyProf, 128), M('rodaGaya','flyw'), 'rodaGaya');
+  fly.rotation.x = Math.PI/2; fly.position.z = 1.7;
+  crankG.add(fly);
+  const TEETH = 84;
+  const teeth = new THREE.InstancedMesh(new THREE.BoxGeometry(0.09, 0.055, 0.24), M('rodaGaya','steel'), TEETH);
+  const dm = new THREE.Object3D();
+  for(let i=0;i<TEETH;i++){
+    const a = i/TEETH*Math.PI*2;
+    dm.position.set(Math.cos(a)*1.565, Math.sin(a)*1.565, 1.7);
+    dm.rotation.set(0, 0, a);
+    dm.updateMatrix();
+    teeth.setMatrixAt(i, dm.matrix);
+  }
+  storePickable(teeth, 'rodaGaya');
+  crankG.add(teeth);
+  for(let i=0;i<6;i++){
+    const a = i/6*Math.PI*2 + Math.PI/6;
+    const hole = mk(new THREE.CylinderGeometry(0.2, 0.2, 0.17, 32), M('rodaGaya','black'), 'rodaGaya');
+    hole.rotation.x = Math.PI/2; hole.position.set(Math.cos(a)*0.9, Math.sin(a)*0.9, 1.7);
+    crankG.add(hole);
+    const bolt = mk(new THREE.CylinderGeometry(0.045, 0.045, 0.06, 6), M('rodaGaya','polish'), 'rodaGaya');
+    bolt.rotation.x = Math.PI/2; bolt.position.set(Math.cos(a)*0.42, Math.sin(a)*0.42, 1.97);
+    crankG.add(bolt);
+  }
+  const hubNut = mk(new THREE.CylinderGeometry(0.22, 0.22, 0.12, 6), M('rodaGaya','polish'), 'rodaGaya');
+  hubNut.rotation.x = Math.PI/2; hubNut.position.z = 1.99;
+  const flyT = mk(new THREE.BoxGeometry(0.045, 0.24, 0.02), M('rodaGaya','mark'), 'rodaGaya');
+  flyT.position.set(0, 1.39, 1.885);
+  crankG.add(hubNut, flyT);
+  scene.add(crankG);
+  parts.crank = crankG;
+  const lbC = labelTxt('Poros Engkol'); lbC.position.set(0, -0.4, 1.35);
+  scene.add(lbC);
+  const lbF = labelTxt('Roda Gaya'); lbF.position.set(0, 1.4, 2.2);
+  scene.add(lbF);
+
+  /* ---- Partikel aliran intake/exhaust ---- */
+  const NP = 90;
+  const posA = new Float32Array(NP*3);
+  for(let i=0;i<NP;i++){
+    const intake = i < 45;
+    posA[i*3  ] = intake ? -1.85 + Math.random()*0.9 : 0.2 + Math.random()*0.5;
+    posA[i*3+1] = intake ? PORT_Y - 0.1 + (Math.random()-0.5)*0.2 : 5.6 + Math.random()*0.4;
+    posA[i*3+2] = (Math.random()-0.5)*0.5;
+  }
+  const pg = new THREE.BufferGeometry();
+  pg.setAttribute('position', new THREE.BufferAttribute(posA, 3));
+  const pmat = new THREE.PointsMaterial({ color:0xaaddff, size:0.16, map:glowTex, transparent:true, opacity:0,
+    depthWrite:false, sizeAttenuation:true, blending:THREE.AdditiveBlending });
+  const points = new THREE.Points(pg, pmat);
+  scene.add(points);
+  const plife = Float32Array.from({length:NP}, ()=>Math.random());
+
+  /* bayangan untuk semua permukaan padat */
+  scene.traverse(o=>{
+    if(o.isMesh && o.material && !o.material.transparent && !(o.material.isMeshBasicMaterial)){
+      o.castShadow = true; o.receiveShadow = true;
+    }
+  });
+
+  /* ============================================================
+     SIMPAN REFERENSI
+  ============================================================ */
+  Object.assign(parts, { bore, mix, mixMat, points, plife, posA, pmat, pg,
+    sparkGlow, flashLight, flame, sparkTex:glowTex, blockG, arrowIn:arrow, arrowEx,
+    headG, busiG, camG, matIn, matEx });
+  scene.add(arrow, arrowEx);
+}
+
+/* ============================================================
+   KINEMATIKA SLIDER-CRANK
+============================================================ */
+function pistonYOf(th){           // th dalam radian
+  const c = R * Math.cos(th);
+  return c + Math.sqrt(ROD*ROD - R*R*Math.sin(th)*Math.sin(th));
+}
+function crankPinOf(th){
+  return new THREE.Vector3(-R * Math.sin(th), R * Math.cos(th), 0);
+}
+
+/* ============================================================
+   LOOP UTAMA
+============================================================ */
+let prevAng = 0;
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(0.05, deltaNow());
+  if(playing && !learningMode) angProd = (angProd + speedDeg * dt) % 720;
+  updateSim(dt);
+  updateHud();
+  updateCamera(dt);
+  controls.update();
+  if(hdOn && composer) composer.render();
+  else renderer.render(scene, camera);
+  cssRenderer.render(scene, camera);
+}
+let lastT = performance.now();
+function deltaNow(){
+  const n = performance.now(); const d = (n - lastT)/1000; lastT = n; return d;
+}
+
+function valveLift(intake){
+  const a = angProd % 720;
+  if(intake){
+    if(a >= 0 && a <= 190){
+      const t = a/190;
+      return VLIFT * Math.sin(Math.PI * Math.min(t,1));
+    }
+  } else {
+    // durasi 190° engkol (sama dengan profil cam), puncak di 610°
+    if(a >= 515 && a <= 705){
+      const t = (a-515)/190;
+      return VLIFT * Math.sin(Math.PI * Math.min(t,1));
+    }
+  }
+  return 0;
+}
+
+function phaseIdx(){
+  const a = angProd % 720;
+  return a < 180 ? 0 : a < 360 ? 1 : a < 540 ? 2 : 3;
+}
+
+function updateSim(dt){
+  // transisi mode komponen utuh/terpisah secara halus
+  const ep = Math.min(1, dt*5);
+  explodeAmt += (explodeTarget - explodeAmt) * ep;
+  if(Math.abs(explodeAmt - explodeTarget) < 0.003) explodeAmt = explodeTarget;
+  const ex = explodeAmt;
+
+  const th = angProd * Math.PI/180;
+  const pY = pistonYOf(th);
+  const cP = crankPinOf(th);
+  const wrist = new THREE.Vector3(0, pY, 0);
+
+  // poros engkol berotasi
+  parts.crank.rotation.z = th;
+  parts.crank.position.y = -ex * 3.2;
+
+  // piston
+  parts.piston.position.set(0, pY - ex * 2.4, 0);
+
+  // batang torak
+  const rodVec = new THREE.Vector3().subVectors(wrist, cP);
+  parts.rod.position.copy(cP).add(wrist).multiplyScalar(0.5);
+  parts.rod.position.y -= ex * 2.6;
+  parts.rod.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), rodVec.clone().normalize());
+
+  // katup
+  const lifI = valveLift(true), lifE = valveLift(false);
+  parts.katupIsap.userData.inner.position.y = -lifI;
+  parts.katupBuang.userData.inner.position.y = -lifE;
+  parts.katupIsap.position.y = VALVE_Y + ex * 2.8;
+  parts.katupBuang.position.y = VALVE_Y + ex * 2.8;
+  // pegas katup memendek sesuai angkat katup
+  parts.katupIsap.userData.spring.scale.y  = (SPR_LEN - lifI) / SPR_LEN;
+  parts.katupBuang.userData.spring.scale.y = (SPR_LEN - lifE) / SPR_LEN;
+  // kanal aliran menyala saat katup terbuka
+  parts.matIn.opacity = 0.12 + 0.5 * (lifI / VLIFT);
+  parts.matEx.opacity = 0.12 + 0.5 * (lifE / VLIFT);
+
+  // camshaft: 1 siklus = 1 putaran camshaft
+  const camAng = th/2;
+  parts.camI.rotation.z = camAng;
+  parts.camE.rotation.z = camAng;
+  parts.camI.position.y = CAMY + ex * 3.0;
+  parts.camE.position.y = CAMY + ex * 3.0;
+  parts.camG.position.y = ex * 3.0;
+
+  // kepala silinder & busi naik
+  parts.headG.position.y = ex * 2.6;
+  parts.busiG.position.y  = ex * 4.2;
+
+  // muatan campuran warna & tinggi
+  const chamberTop = CHAMBER_TOP;
+  const pistTop = pY + 0.958;
+  const mixH = Math.max(0.06, chamberTop - pistTop);
+  parts.mix.scale.set(1, mixH, 1);
+  parts.mix.position.set(0, (chamberTop + pistTop)/2, 0);
+  const pidx = phaseIdx();
+
+  if(pidx===0){ parts.mixMat.color.setHex(0x66aaff); parts.mixMat.opacity = 0.34; }
+  else if(pidx===1){
+    const tp = Math.min(1, (pistonTopTDC() - pistTop)/(pistonTopTDC() - pistonTopBDC()));
+    parts.mixMat.color.copy(new THREE.Color(0x55cc88)).lerp(new THREE.Color(0xddee33), tp);
+    parts.mixMat.opacity = 0.4 + 0.35 * tp;
+  } else if(pidx===2){
+    const span = Math.min(1, (angProd-360)/180);
+    const flashNow = (angProd - 360) < 12;
+    if(flashNow) parts.mixMat.color.setRGB(3.0, 2.5, 1.5);   // kilatan HDR → bloom
+    else parts.mixMat.color.setHex(0xff8833);
+    parts.mixMat.opacity = flashNow ? 0.85 : 0.6 - 0.2*span;
+  } else { parts.mixMat.color.setHex(0x9aa2ae); parts.mixMat.opacity = 0.32; }
+
+  // percikan busi pada 360° (awal langkah usaha)
+  if(prevAng < 360 && angProd >= 360) sparkT = 0.5;
+  if(sparkT > 0){
+    sparkT -= dt;
+    const k = sparkT/0.5;
+    parts.sparkGlow.material.opacity = k;
+    parts.sparkGlow.scale.set(0.6 + (1-k)*1.6, 0.6 + (1-k)*1.6, 1);
+    parts.flashLight.intensity = 30 * k;
+  } else {
+    parts.sparkGlow.material.opacity = 0;
+    parts.flashLight.intensity = 0;
+  }
+
+  // nyala api pada langkah usaha
+  if(pidx===2){
+    const sp = Math.min(1, (angProd-360)/160);
+    parts.flame.material.opacity = Math.max(0, 0.55 * (1 - sp));
+    // api mengisi ruang di atas piston (tidak menembus dinding silinder)
+    const kf = Math.min(1, 0.35 + sp*1.6);
+    parts.flame.position.y = (chamberTop + pistTop)/2;
+    parts.flame.scale.set(2.55*kf, Math.max(0.3, mixH*1.25)*kf, 2.55*kf);
+  } else parts.flame.material.opacity = 0;
+
+  // partikel intake/exhaust
+  updateParticles(dt, pidx, pistTop);
+
+  // panah arah aliran
+  abcyc(parts.arrowIn, dt); abcyc(parts.arrowEx, dt);
+
+  prevAng = angProd;
+}
+
+function pistonTopTDC(){ return pistonYOf(0) + 0.958; }
+function pistonTopBDC(){ return pistonYOf(Math.PI) + 0.958; }
+function abcyc(arrow, dt){
+  if(!arrow) return;
+  const a = angProd % 720;
+  let on = 0;
+  if(arrow.userData.arrowIn && a < 200) on = 1;
+  if(arrow.userData.arrowEx && a >= 515 && a <= 705) on = 1;
+  arrow.visible = !!on;
+  if(on){ arrow.userData.tw += dt*3; arrow.position.y += Math.sin(arrow.userData.tw)*0.002;}
+}
+
+function updateParticles(dt, pidx, pistTop){
+  const pos = parts.posA, life = parts.plife;
+  const I = 45;
+  if(pidx===0){ parts.pmat.color.setHex(0xaaddff); parts.pmat.opacity = 0.95; }
+  else if(pidx===3){ parts.pmat.color.setHex(0xcfcfcf); parts.pmat.opacity = 0.8; }
+  else { parts.pmat.opacity = 0; }
+
+  for(let i=0;i<I;i++){ // intake pool
+    const o = i*3, j = i;
+    life[j] -= dt*0.9;
+    if(pidx===0){
+      // lewat saluran isap → melewati katup → turun ke silinder
+      if(pos[o] < -0.8){ pos[o] += 1.6*dt; pos[o+1] -= 0.47*dt; }
+      else { pos[o] += 0.55*dt; pos[o+1] -= 2.0*dt; pos[o+2] += (Math.random()-0.5)*0.03; }
+      if(life[j] <= 0 || pos[o+1] < pistTop+0.05){
+        pos[o]=-1.85+Math.random()*0.15; pos[o+1]=6.575+(Math.random()-0.5)*0.22; pos[o+2]=(Math.random()-0.5)*0.24; life[j]=1.2+Math.random()*0.6;
+      }
+      pos[o+2] += Math.sin((life[j]*20+ i))*0.004;
+    }
+  }
+  for(let i=I;i<90;i++){ // exhaust pool
+    const o=i*3;
+    life[i] -= dt*0.9;
+    if(pidx===3){
+      // dari ruang bakar → katup buang → saluran buang
+      if(pos[o] < 0.75){ pos[o] += 1.0*dt; pos[o+1] += 1.2*dt; }
+      else { pos[o] += 1.8*dt; pos[o+1] += 0.53*dt; }
+      if(life[i] <= 0 || pos[o] > 1.85){
+        pos[o]=0.1+Math.random()*0.5; pos[o+1]=Math.max(pistTop+0.1, 5.5)+Math.random()*0.35; pos[o+2]=(Math.random()-0.5)*0.4; life[i]=1.0+Math.random()*0.5;
+      }
+      pos[o+2] += Math.sin((life[i]*20+i))*0.004;
+    }
+  }
+  parts.pg.attributes.position.needsUpdate = true;
+}
+
+/* ============================================================
+   UPDATE TAMPILAN HUD
+============================================================ */
+const stName = document.getElementById('stTitle');
+const stDesc = document.getElementById('stDesc');
+const stSub  = document.getElementById('stSub');
+const stPos  = document.getElementById('stPos');
+const stAng  = document.getElementById('stAngle');
+const stTurn = document.getElementById('stTurn');
+const ovSmall= document.getElementById('ovSmall');
+const ovBig  = document.getElementById('ovBig');
+const amDeg  = document.getElementById('amDeg');
+const amPos  = document.getElementById('amPos');
+const angBar = document.getElementById('angBar');
+
+function updateHud(){
+  const idx = phaseIdx();
+  const s = STROKES[idx];
+  const a = Math.round(angProd % 720);
+  stName.textContent = s.name;
+  stDesc.textContent = s.desc;
+  stSub.textContent  = s.sub;
+  stPos.textContent  = s.pos;
+  stAng.textContent  = a + '°';
+  stTurn.textContent = 'Putaran ' + (angProd < 360 ? '1/2' : '2/2');
+  ovSmall.textContent = s.sub + ' · ' + a + '°';
+  ovBig.textContent   = s.name;
+  ovBig.style.color   = s.color;
+  document.getElementById('strokePanel').style.borderLeftColor = s.color;
+  document.getElementById('strokeOverlay').style.borderLeftColor = s.color;
+  angBar.style.width = ((angProd % 720)/720*100) + '%';
+  amDeg.textContent = a + '°';
+  const py = pistonYOf(angProd*Math.PI/180) + 0.958;
+  amPos.textContent = (py - pistonTopTDC()) > -0.02 ? 'TMA' : (pistonTopBDC() - py) < 0.02 ? 'TMB' : (py - (pistonTopTDC()+pistonTopBDC())/2) > 0 ? '↓ menuju TMB' : '↑ menuju TMA';
+
+  // indikator katup langsung (mengikuti animasi)
+  const lif = valveLift(true), lifE = valveLift(false);
+  const inBuka = lif > 0.02, exBuka = lifE > 0.02;
+  const lvIn = document.getElementById('lvIn'), lvEx = document.getElementById('lvEx'), lvL = document.getElementById('lvLangkah');
+  lvIn.textContent  = 'Katup Isap: '  + (inBuka ? 'BUKA' : 'TUTUP');
+  lvEx.textContent  = 'Katup Buang: ' + (exBuka ? 'BUKA' : 'TUTUP');
+  lvL.textContent   = '● ' + SNAKE[idx].nm;
+  lvIn.className  = 'lvTag ' + (inBuka ? 'buka' : 'tutup');
+  lvEx.className  = 'lvTag ' + (exBuka ? 'buka' : 'tutup');
+  document.getElementById('ovValve').textContent =
+    'Katup Isap: ' + (inBuka ? 'BUKA' : 'TUTUP') + ' · Katup Buang: ' + (exBuka ? 'BUKA' : 'TUTUP');
+
+  document.querySelectorAll('.chip').forEach(c=>{
+    const go = +c.dataset.go;
+    const on = Math.floor((angProd%720)/180)*180 === go;
+    c.classList.toggle('on', on);
+    if(on) c.style.backgroundColor = c.style.getPropertyValue('--ac') || '#f97316';
+    else c.style.backgroundColor = '';
+  });
+  if(learningMode && typeof renderLearn === 'function') renderLearn();
+}
+
+/* ============================================================
+   KAMERA / SOROT KOMPONEN
+============================================================ */
+function selectComponent(key){
+  if(!camera) return;
+  selection = key;
+  // highlight material
+  pickMeshes.forEach(m=>{
+    const node = m; node.userData.sel = node.userData.comp === key;
+  });
+  refreshHighlight();
+  renderComponent(chosen2info(key));
+  showInfo(key);
+  // fokus kamera
+  const c = COMPONENTS.find(x=>x.key===key);
+  if(c){
+    const t = c.target.slice();
+    if(key==='piston'||key==='ring') t[1] = pistonYOf(angProd*Math.PI/180) + 0.4;
+    tweenCam(c.pos, t);
+  }
+  // sinkron daftar
+  document.querySelectorAll('#compList button').forEach(b=>b.classList.toggle('sel', b.dataset.key===key));
+}
+function chosen2info(key){
+  return COMPONENTS.find(x=>x.key===key) || null;
+}
+function refreshHighlight(){
+  pickMeshes.forEach(m=>{
+    const k = m.userData.comp;
+    const mat = m.material;
+    if(!k || !mat || !mat.emissive) return;
+    if(!mat.userData._base){
+      mat.userData._base = { col:mat.color.clone(), em:mat.emissive.clone(),
+        tr:mat.transparent, op:mat.opacity };
+    }
+    if(selection && k === selection){
+      mat.emissive.setHex(0x2a6bff);
+      mat.color.copy(mat.userData._base.col).lerp(new THREE.Color(0xffffff), 0.15);
+    } else if(selection){
+      mat.emissive.setHex(0x000000);
+      mat.transparent = true;
+      mat.opacity = 0.35;
+    } else {
+      mat.emissive.copy(mat.userData._base.em);
+      mat.color.copy(mat.userData._base.col);
+      mat.transparent = mat.userData._base.tr;
+      mat.opacity = mat.userData._base.op;
+    }
+  });
+}
+function renderComponent(c){
+  const body = c ? '<div class="dtTitle" style="color:'+STROKES[0].color+'">'+c.ico+' &nbsp;'+c.name+
+    ' <span style="color:var(--acc2);font-size:.7rem;letter-spacing:1px;text-transform:uppercase">('+c.en+')</span></div>'+
+    '<div class="dtBody" style="margin-top:.35rem">'+c.desc+'</div>' : '';
+  ['compDetail','compDetailB'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.style.display = body ? 'block' : 'none'; el.innerHTML = body; }
+  });
+}
+
+/* animasi kamera */
+let camTween = null;
+function tweenCam(pos, target){
+  camTween = {
+    t:0, p0:camera.position.clone(), t0:controls.target.clone(),
+    p1:new THREE.Vector3(pos[0],pos[1],pos[2]), t1:new THREE.Vector3(target[0],target[1],target[2])
+  };
+}
+function updateCamera(dt){
+  if(!camTween) return;
+  camTween.t += dt*2.2;
+  if(camTween.t >= 1){ camTween = null; return; }
+  const k = camTween.t; // ease
+  const e = 1 - (1-k)*(1-k)*(1-k);
+  camera.position.lerpVectors(camTween.p0, camTween.p1, e);
+  controls.target.lerpVectors(camTween.t0, camTween.t1, e);
+}
+
+/* ============================================================
+   UI EVENT — navigasi umum
+============================================================ */
+const SNAKE = [
+  { nm:'Hisap',    pos:'TMA → TMB', vin:'BUKA',   vex:'TUTUP',  cr:'0°–180°', desc:STROKES[0].desc },
+  { nm:'Kompresi', pos:'TMB → TMA', vin:'TUTUP', vex:'TUTUP',  cr:'180°–360°',desc:STROKES[1].desc },
+  { nm:'Usaha',    pos:'TMA → TMB', vin:'TUTUP', vex:'TUTUP',  cr:'360°–540°',desc:STROKES[2].desc },
+  { nm:'Buang',    pos:'TMB → TMA', vin:'TUTUP', vex:'BUKA',   cr:'540°–720°',desc:STROKES[3].desc },
+];
+function navTo(sek){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('aktif', x.dataset.sek===sek));
+  document.querySelectorAll('section.blok').forEach(s=>s.classList.remove('muncul'));
+  document.getElementById('sek-' + sek).classList.add('muncul');
+  if(sek==='sim') resize();
+  const nav = document.getElementById('navTabs');
+  if(nav) nav.classList.remove('open');
+  markVisited(sek);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+document.querySelectorAll('.tab').forEach(b=>{
+  b.addEventListener('click', ()=>navTo(b.dataset.sek));
+});
+document.getElementById('burgerBtn').addEventListener('click', ()=>{
+  const nav = document.getElementById('navTabs');
+  if(nav) nav.classList.toggle('open');
+});
+document.querySelectorAll('[data-goto]').forEach(b=>{
+  b.addEventListener('click', ()=>navTo(b.dataset.goto));
+});
+document.getElementById('playBtn').addEventListener('click', e=>{
+  playing = !playing;
+  e.target.textContent = playing ? '⏸ Jeda' : '▶ Jalankan';
+});
+document.getElementById('stepBtn').addEventListener('click', ()=>{
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶ Jalankan';
+  const next = (Math.floor(angProd/180)+1)*180;
+  angProd = next % 720;
+});
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  camTween = null;
+  camera.position.set(6.2,4.6,8.2);
+  controls.target.set(0,4,0);
+});
+/* preset tampilan kamera */
+const CAM_VIEWS = {
+  full:  { pos:[6.2, 4.6, 8.2],  tgt:[0,4,0] },
+  front: { pos:[0, 4.2, 10.5],   tgt:[0,4,0] },
+  side:  { pos:[10.5, 4.2, 0],   tgt:[0,4,0] },
+  top:   { pos:[0, 11, 0.01],    tgt:[0,3.6,0] }
+};
+function setCamView(name){
+  const v = CAM_VIEWS[name];
+  if(v) tweenCam(v.pos, v.tgt);
+}
+document.getElementById('camFull').addEventListener('click', ()=>setCamView('full'));
+document.getElementById('camFront').addEventListener('click', ()=>setCamView('front'));
+document.getElementById('camSide').addEventListener('click', ()=>setCamView('side'));
+document.getElementById('camTop').addEventListener('click', ()=>setCamView('top'));
+/* zoom perbesar / perkecil */
+const zoomFactor = 1.35;
+function zoomCam(f){
+  camTween = null;
+  const dir = new THREE.Vector3().subVectors(camera.position, controls.target).multiplyScalar(f);
+  camera.position.copy(controls.target).add(dir);
+  controls.update();
+}
+document.getElementById('zoomInBtn').addEventListener('click', ()=>zoomCam(1/zoomFactor));
+document.getElementById('zoomOutBtn').addEventListener('click', ()=>zoomCam(zoomFactor));
+/* fullscreen */
+const viewWrapEl = document.getElementById('viewWrap');
+document.getElementById('fsBtn').addEventListener('click', ()=>{
+  const el = viewWrapEl;
+  const doc = document;
+  if(doc.fullscreenElement || doc.webkitFullscreenElement){
+    (doc.exitFullscreen && doc.exitFullscreen()) || (doc.webkitExitFullscreen && doc.webkitExitFullscreen());
+  } else if(el.requestFullscreen){
+    el.requestFullscreen();
+  } else if(el.webkitRequestFullscreen){
+    el.webkitRequestFullscreen();
+  }
+});
+/* mode terpisah (exploded) */
+const explodeBtn = document.getElementById('explodeBtn');
+explodeBtn.addEventListener('click', ()=>{
+  explodeTarget = explodeTarget ? 0 : 1;
+  explodeBtn.textContent = explodeTarget ? '💥 Terpisah: ON' : '💥 Terpisah: OFF';
+});
+document.addEventListener('fullscreenchange', ()=>setTimeout(resize, 30));
+if(document.documentElement.webkitRequestFullscreen){
+  document.addEventListener('webkitfullscreenchange', ()=>setTimeout(resize, 30));
+}
+document.getElementById('speedRange').addEventListener('input', e=>speedDeg = +e.target.value);
+document.querySelectorAll('.chip').forEach(c=>{
+  c.addEventListener('click', ()=>{
+    playing = false;
+    document.getElementById('playBtn').textContent = '▶ Jalankan';
+    angProd = +c.dataset.go;
+  });
+});
+const labelsChk = document.getElementById('labelsChk');
+/* mode grafis HD (matikan di perangkat lambat) */
+const hdChk = document.getElementById('hdChk');
+hdChk.addEventListener('change', ()=>{
+  hdOn = hdChk.checked && !!composer;
+  if(renderer){
+    renderer.setPixelRatio(hdChk.checked ? Math.min(devicePixelRatio || 1, 2) : 1);
+    renderer.shadowMap.enabled = hdChk.checked;
+    scene.traverse(o=>{ if(o.material && o.isMesh) o.material.needsUpdate = true; });
+    resize();
+  }
+});
+
+/* komponen list panel kiri */
+const compListEl = document.getElementById('compList');
+COMPONENTS.forEach(c=>{
+  const b = document.createElement('button');
+  b.dataset.key = c.key;
+  b.textContent = c.ico + ' ' + c.name;
+  b.addEventListener('click', ()=>selectComponent(c.key));
+  compListEl.appendChild(b);
+});
+/* grid komponen */
+const grid = document.getElementById('compGrid');
+COMPONENTS.forEach(c=>{
+  const card = document.createElement('div');
+  card.className='compCard';
+  card.innerHTML = '<div class="ico">'+c.ico+'</div><div class="en">'+c.en+'</div><h4>'+c.name+'</h4>'+
+    '<p>'+c.desc+'</p><div class="drag">👁 Lihat di 3D →</div>';
+  card.addEventListener('click', ()=>{
+    navTo('sim');
+    selectComponent(c.key);
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+  grid.appendChild(card);
+});
+
+/* klik pada kanvas 3D = pilih komponen */
+const raycaster = new THREE.Raycaster();
+const ndc = new THREE.Vector2();
+viewEl.addEventListener('click', ev=>{
+  if(!renderer) return;
+  const rect = renderer.domElement.getBoundingClientRect();
+  ndc.x = ((ev.clientX - rect.left)/rect.width)*2 - 1;
+  ndc.y = -((ev.clientY - rect.top)/rect.height)*2 + 1;
+  raycaster.setFromCamera(ndc, camera);
+  const hits = raycaster.intersectObjects(pickMeshes, false);
+  if(q3dMode){
+    hideInfo();
+    if(q3dMode==='func' && hits.length){
+      const key = hits[0].object.userData.comp;
+      if(key){
+        q3dKey = key;
+        q3dFocus(key);
+        const c = COMPONENTS.find(x=>x.key===key);
+        q3dTitle.innerHTML = '💡 <b>'+c.ico+' '+c.name+' — </b>apa fungsi komponen ini?';
+        q3dRenderOptions(key);
+        q3dFb.innerHTML='';
+      }
+    }
+    return;
+  }
+  if(hits.length){
+    const key = hits[0].object.userData.comp;
+    if(key){
+      const infoVisible = infoTagEl ? infoTagEl.style.display !== 'none' : false;
+      if(selection === key && infoVisible){
+        hideInfo();
+        selection = null;
+        refreshHighlight();
+        renderComponent(null);
+        document.querySelectorAll('#compList button').forEach(b=>b.classList.remove('sel'));
+      } else {
+        selectComponent(key);
+      }
+    }
+  } else {
+    hideInfo();
+    selection = null;
+    refreshHighlight();
+    renderComponent(null);
+    document.querySelectorAll('#compList button').forEach(b=>b.classList.remove('sel'));
+  }
+});
+
+/* label toggle */
+labelsChk.addEventListener('change', ()=>{
+  if(!scene) return;
+  scene.traverse(o=>{ if(o.isCSS2DObject) o.visible = labelsChk.checked; });
+});
+
+/* ============================================================
+   KUIS 3D — tebak nama komponen & fungsi komponen
+============================================================ */
+const q3dCard    = document.getElementById('q3dCard');
+const q3dTitleEl = document.getElementById('q3dTitle');
+const q3dOptsEl  = document.getElementById('q3dOpts');
+const q3dFbEl    = document.getElementById('q3dFb');
+const q3dPanel   = document.getElementById('q3dPanel');
+const q3dHintEl  = document.getElementById('q3dHint');
+const q3dScoreEl = document.getElementById('q3dScore');
+const q3dBestEl  = document.getElementById('q3dBest');
+let q3dMode = null;          // 'nama' | 'fungsi' | null
+let q3dKey = null;           // komponen yang sedang ditanya
+let q3dBusy = false;         // sudah menjawab -> kunci pilihan
+let q3dBenar = 0, q3dTotal = 0;
+
+function q3dSetLabels(vis){
+  if(scene) scene.traverse(o=>{ if(o.isCSS2DObject) o.visible = vis; });
+}
+function q3dRandomItem(arr){
+  return arr[Math.floor(Math.random()*arr.length)];
+}
+function q3dShuffle(a){
+  const x = a.slice();
+  for(let i=x.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [x[i],x[j]]=[x[j],x[i]];
+  }
+  return x;
+}
+function q3dFocus(key){
+  if(!camera) return;
+  selection = key;
+  pickMeshes.forEach(m=>{ m.userData.sel = m.userData.comp === key; });
+  refreshHighlight();
+  const c = COMPONENTS.find(x=>x.key===key);
+  if(c){
+    const t = c.target.slice();
+    if(key==='piston'||key==='ring') t[1] = pistonYOf(angProd*Math.PI/180) + 0.4;
+    tweenCam(c.pos, t);
+  }
+  document.querySelectorAll('#compList button').forEach(b=>b.classList.toggle('sel', b.dataset.key===key));
+}
+function q3dScoreText(){
+  return q3dBenar + ' / ' + q3dTotal;
+}
+function q3dRenderOptions(buf){
+  q3dFbEl.innerHTML = '';
+  q3dOptsEl.innerHTML = '';
+  q3dBusy = false;
+  buf.forEach(txt=>{
+    const o = document.createElement('button');
+    o.className = 'opt q3dOpt';
+    o.style.display = 'block';
+    o.style.width = '100%';
+    o.style.margin = '.25rem 0';
+    o.style.textAlign = 'left';
+    o.textContent = txt;
+    o.addEventListener('click', ()=>q3dAnswer(txt, o));
+    q3dOptsEl.appendChild(o);
+  });
+}
+function q3dAnswer(clicked, btn){
+  if(q3dBusy || !q3dKey) return;
+  q3dBusy = true;
+  q3dTotal++;
+  const c = COMPONENTS.find(x=>x.key===q3dKey);
+  const benar = (q3dMode==='nama' ? c.name : c.desc);
+  const ok = clicked === benar;
+  if(ok) q3dBenar++;
+  [...q3dOptsEl.children].forEach(o=>{
+    o.style.pointerEvents = 'none';
+    if(o.textContent === benar) o.classList.add('benar');
+    else if(o === btn) o.classList.add('salah');
+  });
+  q3dFbEl.innerHTML = '<div class="pembahasan">'+
+    (ok
+      ? '<b style="color:var(--ok)">✓ Benar!</b> Komponen ini adalah <b style="color:var(--ink)">'+c.name+'</b>.'
+      : '<b style="color:var(--err)">✗ Belum tepat.</b> Jawaban benar: <b style="color:var(--ink)">'+c.name+'</b>.')+
+    '<br><span style="color:var(--mut)">'+c.desc+'</span></div>';
+  q3dScoreEl.textContent = q3dScoreText();
+  q3dSaveBest();
+}
+function q3dSaveBest(){
+  const best = lsGet('k3dBest', { benar:0, total:0 });
+  if(q3dBenar > best.benar || (q3dBenar === best.benar && q3dTotal > best.total)){
+    lsSet('k3dBest', { benar:q3dBenar, total:q3dTotal });
+  }
+  q3dShowBest();
+}
+function q3dShowBest(){
+  const best = lsGet('k3dBest', null);
+  if(best && best.total > 0) q3dBestEl.textContent = '🏆 Rekor: '+best.benar+' / '+best.total+' benar';
+  else q3dBestEl.textContent = '';
+}
+function q3dNext(){
+  hideInfo();
+  q3dBenar = 0; q3dTotal = 0; q3dBusy = false;
+  q3dScoreEl.textContent = q3dScoreText();
+  if(!q3dMode){
+    q3dPanel.style.display = 'none';
+    q3dHintEl.style.display = '';
+    q3dSetLabels(labelsChk.checked);
+    return;
+  }
+  q3dPanel.style.display = 'block';
+  q3dHintEl.style.display = 'none';
+  q3dSetLabels(false);
+  if(q3dMode === 'nama'){
+    const key = q3dRandomItem(Object.keys(PICKABLE));
+    q3dKey = key;
+    q3dFocus(key);
+    q3dTitleEl.innerHTML = '🔍 <b>Komponen apakah yang sedang disorot di model 3D?</b>';
+    const c = COMPONENTS.find(x=>x.key===key);
+    const pilihan = q3dShuffle([c.name].concat(
+      q3dShuffle(COMPONENTS.map(x=>x.name).filter(n=>n!==c.name)).slice(0,3)));
+    q3dRenderOptions(pilihan);
+  } else {
+    q3dKey = null;
+    q3dTitleEl.innerHTML = '💡 <b>Klik salah satu komponen pada model 3D</b>, lalu pilih fungsinya di bawah.';
+    q3dOptsEl.innerHTML = '<div class="muted" style="font-size:.78rem">👆 Silakan klik komponen di gambar 3D…</div>';
+  }
+}
+function q3dStart(mode){
+  if(q3dMode === mode){
+    q3dMode = null;
+    document.getElementById('q3dModeName').classList.remove('sel');
+    document.getElementById('q3dModeFunc').classList.remove('sel');
+    q3dKey = null;
+    q3dNext();
+    if(!camera) return;
+    selection = null;
+    refreshHighlight();
+    document.querySelectorAll('#compList button').forEach(b=>b.classList.remove('sel'));
+    return;
+  }
+  q3dMode = mode;
+  document.getElementById('q3dModeName').classList.toggle('sel', mode==='nama');
+  document.getElementById('q3dModeFunc').classList.toggle('sel', mode==='fungsi');
+  q3dNext();
+}
+document.getElementById('q3dModeName').addEventListener('click', ()=>q3dStart('nama'));
+document.getElementById('q3dModeFunc').addEventListener('click', ()=>q3dStart('fungsi'));
+document.getElementById('q3dNext').addEventListener('click', q3dNext);
+q3dShowBest();
+
+/* ============================================================
+   KUIS — 15 soal dengan feedback & pembahasan
+============================================================ */
+const quizWrap = document.getElementById('quizWrap');
+QUIZ.forEach((q, qi)=>{
+  const box = document.createElement('div');
+  box.className='quizQ';
+  box.innerHTML = '<div class="qn"><span class="bagTag" style="margin-right:.4rem">'+q.kat+'</span>'+(qi+1)+'. '+q.q+'</div>'+
+    '<div id="qfb'+qi+'"></div>'+
+    q.o.map((o, oi)=>'<label class="opt"><input type="radio" name="q'+qi+'" value="'+oi+'"> '+o+'</label>').join('');
+  quizWrap.appendChild(box);
+});
+document.getElementById('checkBtn').addEventListener('click', ()=>{
+  let benar = 0; const salah = [];
+  QUIZ.forEach((q, qi)=>{
+    const qDiv = quizWrap.querySelectorAll('.quizQ')[qi];
+    const els = qDiv.querySelectorAll('.opt');
+    const chosen = qDiv.querySelector('input[name="q'+qi+'"]:checked');
+    els.forEach((el, oi)=>{
+      el.classList.remove('benar','salah');
+      el.style.pointerEvents = 'none';
+      if(oi === q.a) el.classList.add('benar');
+      if(chosen && chosen.value == oi && oi !== q.a) el.classList.add('salah');
+    });
+    const fb = qDiv.querySelector('#qfb'+qi);
+    if(chosen && chosen.value == q.a){
+      benar++;
+      fb.innerHTML = '<div class="pembahasan" style="background:rgba(74,222,128,.08);border-left-color:var(--ok)">'+
+        '<b style="color:var(--ok)">✓ Jawaban benar!</b> Kamu sudah memahami konsep ini.<br><span style="color:var(--mut)">'+q.bahas+'</span></div>';
+    } else {
+      salah.push({i:qi, q});
+      fb.innerHTML = '<div class="pembahasan">'+
+        '<b style="color:var(--err)">✗ Jawaban belum tepat.</b> Perhatikan kembali konsep tentang: <span style="color:var(--ink)">'+q.q+'</span><br>'+
+        '<span style="color:var(--mut)">Pembahasan: '+q.bahas+'</span></div>';
+    }
+  });
+  document.getElementById('skor').textContent = benar + ' / ' + QUIZ.length;
+  showEvalResult(benar, QUIZ.length, salah);
+});
+document.getElementById('resetQuiz').addEventListener('click', ()=>{
+  quizWrap.querySelectorAll('input:checked').forEach(i=>i.checked=false);
+  quizWrap.querySelectorAll('.opt').forEach(el=>{ el.classList.remove('benar','salah'); el.style.pointerEvents=''; });
+  quizWrap.querySelectorAll('.pembahasan').forEach(el=>el.remove());
+  document.getElementById('skor').textContent = '0 / ' + QUIZ.length;
+  document.getElementById('evalResult').classList.remove('show');
+  document.getElementById('evalKategori').style.display = 'none';
+});
+
+function showEvalResult(benar, total, salah){
+  const el = document.getElementById('evalResult');
+  const pct = Math.round(benar/total*100);
+  const kat = pct>=90 ? 'Sangat Baik' : pct>=80 ? 'Baik' : pct>=70 ? 'Cukup' : 'Perlu Belajar Kembali';
+  const warna = pct>=90 ? 'var(--ok)' : pct>=70 ? 'var(--acc2)' : 'var(--err)';
+  document.getElementById('evalKategori').style.display = 'inline-block';
+  document.getElementById('evalKategori').textContent = 'Kategori: ' + kat;
+
+  let rekom = '';
+  if(salah.length){
+    const map = { Dasar:'tab Komponen', Aplikasi:'tab Simulasi 3D', Analisis:'tab Simulasi 3D' };
+    const set = [...new Set(salah.map(s=>s.q.kat))];
+    rekom = '<div class="pembahasan" style="margin-top:.8rem"><b>📌 Rekomendasi materi:</b> ulangi kembali pada ' +
+      set.map(x=>map[x]||'evaluasi').join(', ') + ' — khusus soal:' +
+      salah.map(s=>' <b>'+ (s.i+1) +'</b>').join(',') + '.</div>';
+  } else {
+    rekom = '<div class="pembahasan" style="margin-top:.8rem;background:rgba(74,222,128,.08);border-left-color:var(--ok)"><b>🎉 Sempurna!</b> Semua jawaban benar. Kamu dapat melanjutkan ke refleksi.</div>';
+  }
+  const bs = '<div class="bsRow">'+
+      '<div class="bsBox b"><b>'+benar+'</b><span>Jawaban benar</span></div>'+
+      '<div class="bsBox s"><b>'+(total-benar)+'</b><span>Jawaban salah</span></div>'+
+      '<div class="bsBox"><b>'+total+'</b><span>Jumlah soal</span></div>'+
+    '</div>';
+  if(isGuru()){
+    el.innerHTML = '<div class="big" style="color:'+warna+'">'+pct+'%</div>'+
+      '<div class="sub">'+benar+' benar · '+(total-benar)+' salah · dari '+total+' soal</div>'+
+      '<div class="statusPill" style="background:'+warna+';color:#101827;margin:0 0 .6rem">Kategori: '+kat+'</div>'+
+      bs + rekom;
+  } else {
+    el.innerHTML = '<div class="big">Hasil Evaluasi</div>'+
+      '<div class="sub">Periksa pembahasan pada tiap soal di atas. Nilai akhir akan diberikan oleh guru.</div>'+
+      bs + rekom;
+  }
+  el.classList.add('show');
+  const pil = QUIZ.map((q, qi)=>{ const c = quizWrap.querySelector('input[name="q'+qi+'"]:checked'); return c ? +c.value : null; });
+  saveResult('evaluasi', benar, total, pct, null, { pilihan:pil }, 'evalResult');
+}
+
+/* ============================================================
+   SETUP & RESIZE
+============================================================ */
+function resize(){
+  const w = viewWrap.clientWidth, h = viewWrap.clientHeight;
+  if(!renderer) return;
+  renderer.setSize(w, h);
+  cssRenderer.setSize(w, h);
+  if(composer){ composer.setPixelRatio(renderer.getPixelRatio()); composer.setSize(w, h); }
+  camera.aspect = w/h;
+  camera.updateProjectionMatrix();
+}
+const viewWrap = document.getElementById('viewWrap');
+window.addEventListener('resize', resize);
+
+/* ============================================================
+   MODE BELAJAR PER LANGKAH
+============================================================ */
+const learnPanel = document.getElementById('learnPanel');
+const learnStep = document.getElementById('learnStep');
+const learnName = document.getElementById('learnName');
+const learnBar  = document.getElementById('learnBar');
+const learnInfo = document.getElementById('learnInfo');
+const learnBtn  = document.getElementById('learnBtn');
+function setLearning(on){
+  learningMode = on;
+  learnBtn.textContent = '📖 Mode Belajar: ' + (on ? 'ON' : 'OFF');
+  learnPanel.style.display = on ? 'block' : 'none';
+  playing = false;
+  document.getElementById('playBtn').textContent = '▶ Jalankan';
+  if(on) angProd = 0;
+  renderLearn();
+}
+function renderLearn(){
+  const idx = Math.floor((angProd%720)/180);
+  const s = SNAKE[idx];
+  learnStep.textContent = 'LANGKAH ' + (idx+1) + '/4';
+  learnName.textContent = 'Langkah ' + s.nm;
+  learnBar.style.width = ((idx+1)*25) + '%';
+  learnInfo.innerHTML =
+    '<div>📍 <b>Nama langkah:</b> ' + s.nm + '</div>' +
+    '<div>🟦 <b>Posisi piston:</b> ' + s.pos + '</div>' +
+    '<div>🚪 <b>Katup isap:</b> ' + s.vin + ' · <b>Katup buang:</b> ' + s.vex + '</div>' +
+    '<div>🛞 <b>Crankshaft:</b> ' + s.cr + ' (' + ((idx+1)*180-180) + '°–' + ((idx+1)*180) + '°)</div>' +
+    '<div style="margin-top:.3rem;color:var(--mut)">💡 ' + s.desc + '</div>';
+}
+learnBtn.addEventListener('click', ()=>setLearning(!learningMode));
+document.getElementById('learnPrev').addEventListener('click', ()=>{
+  playing = false;
+  angProd = ((Math.floor(angProd/180) - 1 + 4) % 4) * 180;
+  renderLearn();
+});
+document.getElementById('learnNext').addEventListener('click', ()=>{
+  playing = false;
+  angProd = ((Math.floor(angProd/180) + 1) % 4) * 180;
+  renderLearn();
+});
+
+/* ============================================================
+   PRE-TEST (5 soal, tidak memengaruhi nilai akhir)
+============================================================ */
+const PRETEST = [
+  { q:'Apa yang dimaksud dengan motor 4 tak?',
+    o:['Motor yang menyelesaikan 1 siklus dalam 4 langkah piston','Motor yang menggunakan 4 silinder','Motor dengan 4 katup','Motor yang menggunakan bahan bakar 4 jenis'], a:0 },
+  { q:'Jumlah langkah kerja dalam satu siklus motor 4 tak adalah…',
+    o:['2 langkah','4 langkah','6 langkah','8 langkah'], a:1 },
+  { q:'Fungsi utama piston adalah…',
+    o:['Menerima tekanan ledakan dan bergerak naik-turun','Membakar campuran','Mengatur suhu mesin','Menyimpan oli'], a:0 },
+  { q:'Fungsi utama busi adalah…',
+    o:['Menghasilkan bunga api untuk membakar campuran','Mendinginkan mesin','Membuka katup','Memompa bahan bakar'], a:0 },
+  { q:'Berapa kali poros engkol berputar dalam satu siklus motor 4 tak?',
+    o:['1 kali','2 kali','3 kali','4 kali'], a:1 },
+];
+const preWrap = document.getElementById('preWrap');
+PRETEST.forEach((q, qi)=>{
+  const box = document.createElement('div');
+  box.className='quizQ';
+  box.innerHTML = '<div class="qn">'+(qi+1)+'. '+q.q+'</div>'+
+    '<div id="qpre'+qi+'"></div>'+
+    q.o.map((o, oi)=>'<label class="opt"><input type="radio" name="pre'+qi+'" value="'+oi+'"> '+o+'</label>').join('');
+  preWrap.appendChild(box);
+});
+document.getElementById('preCheck').addEventListener('click', ()=>{
+  let benar = 0;
+  PRETEST.forEach((q, qi)=>{
+    const qDiv = preWrap.querySelectorAll('.quizQ')[qi];
+    const els = qDiv.querySelectorAll('.opt');
+    const chosen = qDiv.querySelector('input[name="pre'+qi+'"]:checked');
+    els.forEach((el, oi)=>{
+      el.classList.remove('benar','salah');
+      if(oi === q.a) el.classList.add('benar');
+      if(chosen && chosen.value == oi && oi !== q.a) el.classList.add('salah');
+    });
+    if(chosen && chosen.value == q.a) benar++;
+  });
+  const el = document.getElementById('preResult');
+  el.innerHTML = '<div class="big" style="color:var(--acc2)">Pre-Test: '+benar+' benar · '+(PRETEST.length-benar)+' salah</div>'+
+    '<div class="messageBox ok">✅ <b>Pre-Test selesai. Silakan lanjutkan ke materi pembelajaran.</b><br>'+
+    '<span style="color:var(--mut);font-size:.82rem">Benar: '+benar+' · Salah: '+(PRETEST.length-benar)+'. Skor pre-test tidak memengaruhi nilai akhir.</span></div>';
+  el.classList.add('show');
+  const pil = PRETEST.map((q, qi)=>{ const c = preWrap.querySelector('input[name="pre'+qi+'"]:checked'); return c ? +c.value : null; });
+  saveResult('pretest', benar, PRETEST.length, benar / PRETEST.length * 100, null, { pilihan:pil }, 'preResult');
+});
+document.getElementById('preReset').addEventListener('click', ()=>{
+  preWrap.querySelectorAll('input:checked').forEach(i=>i.checked=false);
+  preWrap.querySelectorAll('.opt').forEach(el=>el.classList.remove('benar','salah'));
+  document.getElementById('preResult').classList.remove('show');
+});
+
+/* ============================================================
+   LKPD INTERAKTIF
+============================================================ */
+const LK_FUNGSI = [
+  'Menerima tekanan ledakan & bergerak naik-turun di dalam silinder',
+  'Merapatkan ruang bakar & mengikis sisa oli pada dinding silinder',
+  'Meneruskan gerak piston ke poros engkol',
+  'Mengubah gerak naik-turun piston menjadi gerak rotasi',
+  'Membuka jalur masuk campuran udara-bahan bakar',
+  'Membuka jalur keluar gas sisa pembakaran',
+  'Menghasilkan bunga api untuk membakar campuran',
+  'Mengatur buka-tutup katup (½ putaran poros engkol)'
+];
+const LK_ISO = [
+  ['Piston','Batang torak','Ring piston','Poros engkol','Katup isap','Katup buang','Busi','Camshaft/Noken As'],
+  [0,2,1,3,4,5,6,7] // indeks fungsi benar
+];
+const lkpdWrap = document.getElementById('lkpdWrap');
+lkpdWrap.innerHTML =
+  '<div class="lkBox"><h3>🏷 AKTIVITAS 1 — IDENTIFIKASI</h3><div class="lkSub">Cocokkan nama komponen dengan fungsinya (pilih pada menu tarik-turun).</div>'+
+    '<div class="lkGrid">'+
+      LK_ISO[0].map((nm,i)=>
+        '<div class="lkRow"><span><b>'+nm+'</b></span><select class="inputSel" data-iso="'+i+'">'+
+        '<option value="">— pilih fungsi —</option>'+
+        LK_FUNGSI.map((f,fi)=>'<option value="'+fi+'">'+f+'</option>').join('')+
+        '</select></div>').join('')+
+    '</div></div>'+
+  '<div class="lkBox"><h3>🔢 AKTIVITAS 2 — URUTKAN</h3><div class="lkSub">Urutkan langkah kerja motor 4 tak (1 = pertama).</div>'+
+    '<div id="lkOrder"></div></div>';
+['Hisap','Kompresi','Usaha','Buang'].forEach((nm,i)=>{
+  const d = document.createElement('div');
+  d.className='orderRow';
+  d.innerHTML = '<span class="nm">'+nm+'</span><select class="inputSel" data-ord="'+i+'">'+
+    '<option value="">— pilih —</option>'+[1,2,3,4].map(n=>'<option value="'+n+'">Urutan '+n+'</option>').join('')+'</select>';
+  document.getElementById('lkOrder').appendChild(d);
+});
+lkpdWrap.insertAdjacentHTML('beforeend',
+  '<div class="lkBox"><h3>🔎 AKTIVITAS 3 — ANALISIS KASUS</h3>'+
+  '<div class="lkSub"><i>“Seorang mekanik menemukan bahwa mesin sulit hidup dan tenaga mesin berkurang. Berdasarkan prinsip kerja motor 4 tak, analisislah kemungkinan hubungan masalah tersebut dengan proses pembakaran dan kondisi komponen mesin.”</i></div>'+
+  '<textarea class="inputTxt" id="lkA3" placeholder="Tulis analisismu di sini…"></textarea></div>'+
+  '<div class="lkBox"><h3>👀 AKTIVITAS 4 — PENGAMATAN SIMULASI 3D</h3><div class="lkSub">Amati simulasi di tab Simulasi 3D lalu jawab:</div>'+
+  '<div class="lkGrid" id="lkA4Grid"></div></div>');
+const A4 = ['Apa yang terjadi pada piston?','Bagaimana kondisi katup masuk?','Bagaimana kondisi katup buang?',
+  'Berapa derajat putaran poros engkol dalam 1 siklus?','Apa yang terjadi pada setiap langkah siklus?'];
+const a4Wrap = document.getElementById('lkA4Grid');
+A4.forEach((t,i)=>{
+  const d = document.createElement('div');
+  d.innerHTML = '<label style="font-size:.82rem;font-weight:600">'+(i+1)+'. '+t+'</label><textarea class="inputTxt" data-a4="'+i+'"></textarea>';
+  a4Wrap.appendChild(d);
+});
+document.getElementById('lkpdSave').addEventListener('click', ()=>{
+  const iso = [...lkpdWrap.querySelectorAll('[data-iso]')];
+  const isoOk = sel => sel.value !== '' && +sel.value === LK_ISO[1][+sel.dataset.iso];
+  const benar = iso.filter(isoOk).length;
+  const ord = [...document.querySelectorAll('[data-ord]')];
+  const ordOk = sel => sel.value !== '' && +sel.value === +sel.dataset.ord + 1;
+  const benarOrd = ord.filter(ordOk).length;
+  const a3txt = document.getElementById('lkA3').value.trim();
+  const a3 = a3txt.length > 15;
+  const a4v = [...document.querySelectorAll('[data-a4]')];
+  const benarA4 = a4v.filter(t=>t.value.trim().length > 5).length;
+  const nilai = Math.round(benar/8*40 + benarOrd/4*20 + (a3?20:0) + (benarA4>=3?20:0));
+  document.getElementById('lkpdScore').textContent = nilai;
+  const rincian = { a1:{ benar, salah:8-benar, total:8 }, a2:{ benar:benarOrd, salah:4-benarOrd, total:4 },
+    a3:{ terisi:a3 }, a4:{ terisi:benarA4, total:5 } };
+  const jawaban = {
+    iso: iso.map(sel=>({ komponen: LK_ISO[0][+sel.dataset.iso], dipilih: sel.value === '' ? null : LK_FUNGSI[+sel.value], benar: isoOk(sel) })),
+    urutan: ord.map(sel=>({ langkah: ['Hisap','Kompresi','Usaha','Buang'][+sel.dataset.ord], urutan: sel.value === '' ? null : +sel.value })),
+    a3: a3txt,
+    a4: a4v.map((t,i)=>({ q: A4[i], a: t.value.trim() })),
+  };
+  const el = document.getElementById('lkpdResult');
+  el.innerHTML = (isGuru()
+      ? '<div class="big" style="color:var(--acc2)">Nilai LKPD: '+nilai+'</div>'
+      : '<div class="big">Jawaban LKPD terkirim</div><div class="sub">Nilai LKPD akan diberikan oleh guru.</div>')+
+    '<div class="bsRow">'+
+      '<div class="bsBox b"><b>'+benar+'</b><span>Aktivitas 1 — benar</span></div>'+
+      '<div class="bsBox s"><b>'+(8-benar)+'</b><span>Aktivitas 1 — salah</span></div>'+
+      '<div class="bsBox b"><b>'+benarOrd+'</b><span>Aktivitas 2 — benar</span></div>'+
+      '<div class="bsBox s"><b>'+(4-benarOrd)+'</b><span>Aktivitas 2 — salah</span></div>'+
+    '</div>'+
+    '<div class="messageBox ok">Aktivitas 3: '+(a3 ? 'terisi ✓' : 'belum diisi')+' · Aktivitas 4: '+benarA4+'/5 pertanyaan dijawab. '+
+    'Jawaban uraian (Aktivitas 3 &amp; 4) dinilai oleh guru.</div>';
+  el.classList.add('show');
+  saveResult('lkpd', benar + benarOrd, 12, nilai, rincian, jawaban, 'lkpdResult');
+});
+document.getElementById('lkpdReset').addEventListener('click', ()=>{
+  lkpdWrap.querySelectorAll('select,textarea').forEach(el=>el.value='');
+  document.getElementById('lkpdScore').textContent='0';
+  document.getElementById('lkpdResult').classList.remove('show');
+});
+
+/* ============================================================
+   REFLEKSI
+============================================================ */
+const REFQ = [
+  'Apa konsep baru yang saya pahami?',
+  'Komponen apa yang paling mudah saya pahami?',
+  'Bagian mana yang masih sulit?',
+  'Apa yang saya pelajari dari simulasi 3D?',
+  'Bagaimana hubungan materi ini dengan pekerjaan seorang mekanik otomotif?',
+  'Apa yang akan saya pelajari kembali?'
+];
+const refWrap = document.getElementById('refWrap');
+REFQ.forEach((t,i)=>{
+  const d = document.createElement('div');
+  d.className='refQ';
+  d.innerHTML = '<label>'+(i+1)+'. '+t+'</label><textarea class="inputTxt" data-ref="'+i+'"></textarea>';
+  refWrap.appendChild(d);
+});
+function loadRef(){
+  const saved = lsGet('m4_ref', {});
+  refWrap.querySelectorAll('[data-ref]').forEach(t=>{ t.value = saved['r'+t.dataset.ref] || ''; });
+}
+document.getElementById('refSave').addEventListener('click', ()=>{
+  const obj = {};
+  refWrap.querySelectorAll('[data-ref]').forEach(t=>{ obj['r'+t.dataset.ref] = t.value; });
+  lsSet('m4_ref', obj);
+  const el = document.getElementById('refResult');
+  el.innerHTML = '<div class="messageBox ok">✅ <b>Refleksi tersimpan.</b> Terima kasih sudah mengisi refleksi pembelajaran.</div><div class="saveNote"></div>';
+  el.classList.add('show');
+  markDone('refleksi');
+  const note = el.querySelector('.saveNote');
+  if(canSave()){
+    note.textContent = '⏳ Mengirim ke guru…';
+    sb.from('refleksi').upsert({ user_id: me.id, jawaban: obj, updated_at: new Date().toISOString() }).then(({ error })=>{
+      note.className = 'saveNote ' + (error ? 'err' : 'ok');
+      note.textContent = error ? '⚠ Gagal menyimpan: ' + pesanError(error) : '✓ Refleksi tersimpan di database dan dapat dibaca gurumu.';
+    });
+  } else if(me && me.demo){ note.textContent = 'ℹ Mode demo — refleksi tidak disimpan ke database.'; }
+  else if(isGuru()){ note.textContent = 'ℹ Mode guru — refleksi guru tidak disimpan.'; }
+});
+document.getElementById('refReset').addEventListener('click', ()=>{
+  refWrap.querySelectorAll('[data-ref]').forEach(t=>t.value='');
+  lsSet('m4_ref', {});
+  document.getElementById('refResult').classList.remove('show');
+});
+
+/* ============================================================
+   PENYIMPANAN LOKAL (per akun) & PROGRESS
+============================================================ */
+const GLOBAL_LS = new Set(['tema']);
+function lsKey(name){ return LS_K + (me && me.id && !GLOBAL_LS.has(name) ? '_' + me.id : '') + '_' + name; }
+function lsGet(name, def){ try{ const v = localStorage.getItem(lsKey(name)); return v === null ? def : JSON.parse(v); }catch(e){ return def; } }
+function lsSet(name, val){ try{ localStorage.setItem(lsKey(name), JSON.stringify(val)); }catch(e){} }
+const isGuru  = () => !!(me && me.role === 'guru');
+const canSave = () => !!(sb && me && me.role === 'siswa' && !me.demo);
+
+function markDone(key){
+  const s = lsGet('progress', {});
+  if(!s[key]){
+    s[key] = true;
+    lsSet('progress', s);
+    queueProgressSync();
+  }
+  refreshProgress();
+}
+function markVisited(sek){
+  markDone('v_' + sek);
+}
+let progTimer = null;
+function queueProgressSync(){
+  if(!canSave()) return;
+  clearTimeout(progTimer);
+  progTimer = setTimeout(async ()=>{
+    try{
+      await sb.from('progres').upsert({ user_id: me.id, data: lsGet('progress', {}), updated_at: new Date().toISOString() });
+    }catch(e){ /* dicoba lagi pada perubahan berikutnya */ }
+  }, 1200);
+}
+const STEP_LIST = [['pretest','Pre-Test'],['komponen','Komponen'],['simulasi','Simulasi 3D'],
+  ['lkpd','LKPD'],['evaluasi','Evaluasi'],['refleksi','Refleksi']];
+function progressDone(s, rows){
+  s = s || {}; rows = rows || [];
+  const has = j => rows.some(r => r.jenis === j);
+  return {
+    pretest:  has('pretest')  || !!s.pretest,
+    komponen: !!s.v_komp,
+    simulasi: !!s.v_sim,
+    lkpd:     has('lkpd')     || !!s.lkpd,
+    evaluasi: has('evaluasi') || !!s.evalDone,
+    refleksi: !!s.refleksi,
+  };
+}
+function progressPct(d){ return Math.round(STEP_LIST.filter(([k])=>d[k]).length / STEP_LIST.length * 100); }
+function refreshProgress(){
+  const pct = progressPct(progressDone(lsGet('progress', {}), myHasil));
+  const bar = document.getElementById('pgBar'), pctEl = document.getElementById('pgPct');
+  if(bar) bar.style.width = pct + '%';
+  if(pctEl) pctEl.textContent = pct + '%';
+  loadHasil();
+  return pct;
+}
+
+/* ============================================================
+   SIMPAN HASIL KE DATABASE
+   benar/salah → tabel `hasil` (siswa boleh lihat)
+   nilai       → tabel `nilai` (hanya guru)
+============================================================ */
+const JENIS_LBL = { pretest:'Pre-Test', evaluasi:'Evaluasi', lkpd:'LKPD' };
+async function saveResult(jenis, benar, total, nilai, rincian, jawaban, boxId){
+  markDone(jenis === 'evaluasi' ? 'evalDone' : jenis);
+  const box = document.getElementById(boxId);
+  let note = box ? box.querySelector('.saveNote') : null;
+  if(box && !note){ note = document.createElement('div'); note.className = 'saveNote'; box.appendChild(note); }
+  const say = (t, c) => { if(note){ note.className = 'saveNote ' + (c || ''); note.textContent = t; } };
+  if(!me) return;
+  if(me.demo){ say('ℹ Mode demo — hasil tidak disimpan ke database.'); return; }
+  if(isGuru()){ say('ℹ Mode guru — percobaan guru tidak disimpan.'); return; }
+  say('⏳ Menyimpan ke database…');
+  const { error } = await sb.rpc('simpan_hasil', {
+    p_jenis: jenis, p_benar: benar, p_salah: total - benar, p_total: total,
+    p_nilai: Math.round(nilai * 10) / 10, p_rincian: rincian, p_jawaban: jawaban
+  });
+  if(error){ say('⚠ Gagal menyimpan: ' + pesanError(error) + ' Tekan tombol sekali lagi.', 'err'); return; }
+  say('✓ Tersimpan. Hasil ini sudah dapat dilihat gurumu.', 'ok');
+  await loadMyHasil();
+}
+async function loadMyHasil(){
+  if(!canSave()) return;
+  const { data, error } = await sb.from('hasil')
+    .select('id,jenis,benar,salah,total,rincian,created_at')
+    .eq('user_id', me.id)
+    .order('created_at', { ascending:false });
+  if(!error) myHasil = data || [];
+  refreshProgress();
+}
+
+/* ============================================================
+   HASIL BELAJAR (tampilan siswa: hanya benar & salah)
+============================================================ */
+function fmtWaktu(t){
+  try{ return new Date(t).toLocaleString('id-ID', { dateStyle:'medium', timeStyle:'short' }); }catch(e){ return t; }
+}
+function loadHasil(){
+  const wrap = document.getElementById('hasilWrap');
+  if(!wrap) return;
+  const pl = document.getElementById('profileLine');
+  if(pl){
+    pl.innerHTML = me
+      ? '<span class="chipMini">👤 '+esc(me.nama)+'</span><span class="chipMini">🏫 Kelas: '+esc(me.kelas || '—')+'</span>'+
+        '<span class="chipMini">@'+esc(me.username || '')+'</span>' + (me.demo ? '<span class="chipMini">Mode demo</span>' : '')
+      : '';
+  }
+  const d = progressDone(lsGet('progress', {}), myHasil);
+  const doneC = STEP_LIST.filter(([k])=>d[k]).length;
+  const pct = progressPct(d);
+  const status = pct>=90 ? '🏆 Tuntas & Unggul' : pct>=70 ? '✅ Tuntas' : pct>=40 ? '🔄 Bertahap' : '❄️ Baru Mulai';
+  const stColor = pct>=70 ? 'var(--ok)' : pct>=40 ? 'var(--acc2)' : 'var(--acc)';
+  const last = j => myHasil.find(r => r.jenis === j);
+  const bsCell = (r, label) => '<div class="hBox">' +
+    (r ? '<span class="bs"><i>'+r.benar+'</i> · <em>'+r.salah+'</em></span>' : '<b>—</b>') +
+    '<span>'+label+'<br>benar · salah</span></div>';
+  const hist = myHasil.map(r =>
+    '<div class="histItem"><span><b>'+JENIS_LBL[r.jenis]+'</b> <span class="when">· '+fmtWaktu(r.created_at)+'</span></span>'+
+    '<span><b style="color:var(--ok)">'+r.benar+' benar</b> · <b style="color:var(--err)">'+r.salah+' salah</b> '+
+    '<span class="when">dari '+r.total+' soal</span></span></div>').join('');
+  wrap.innerHTML =
+    '<div class="lkBox"><h3>📊 Ringkasan Hasil Belajar</h3>'+
+    '<div class="hasilGrid">'+
+      bsCell(last('pretest'), 'Pre-Test') +
+      bsCell(last('evaluasi'), 'Evaluasi') +
+      bsCell(last('lkpd'), 'LKPD (Aktivitas 1–2)') +
+      '<div class="hBox"><b>'+pct+'%</b><span>Persentase Materi</span></div>'+
+    '</div>'+
+    '<div style="margin-top:.8rem"><span class="statusPill" style="background:'+stColor+';color:#101827">Status: '+status+'</span>'+
+    '<span class="statusPill" style="margin-left:.5rem;background:var(--panel2);color:var(--ink)">'+doneC+'/'+STEP_LIST.length+' langkah selesai</span></div>'+
+    '<div class="progressbar" style="margin-top:.8rem"><i style="width:'+pct+'%"></i></div>'+
+    '<div style="margin-top:1rem" class="lkSub">Status tiap langkah:</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:.3rem">'+
+      STEP_LIST.map(([k,l])=>'<span class="chipMini" style="color:'+(d[k]?'var(--ok)':'var(--mut)')+'">'+(d[k]?'✓ ':'○ ')+l+'</span>').join('')+
+    '</div></div>'+
+    '<div class="lkBox"><h3>🕘 Riwayat Pengerjaan</h3>'+
+      (hist ? '<div class="histList">'+hist+'</div>' : '<div class="lkSub">Belum ada tes yang dikerjakan.</div>')+
+      '<div class="saveNote">🔒 Nilai akhir hanya dapat dilihat oleh guru.</div></div>';
+}
+
+/* ============================================================
+   LOGIN & AKUN (Supabase Auth)
+============================================================ */
+const CFG = window.MODUL_CONFIG || {};
+const SB_URL = String(CFG.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+const SB_KEY = String(CFG.SUPABASE_ANON_KEY || '').trim();
+const EMAIL_DOMAIN = String(CFG.EMAIL_DOMAIN || 'siswa.modul4tak.id').trim();
+const SUPABASE_CDN = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const SB_CONFIGURED = /^https:\/\/\S+/.test(SB_URL) && SB_KEY.length > 30 && !/GANTI/i.test(SB_URL + SB_KEY);
+const USER_RE = /^[a-z0-9._]{3,30}$/;
+let createClientFn = null;
+let quietSignOut = false;
+
+function esc(t){
+  return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function toEmail(u){
+  u = String(u || '').trim().toLowerCase();
+  return u.includes('@') ? u : u + '@' + EMAIL_DOMAIN;
+}
+function pesanError(e){
+  const m = (e && (e.message || e.error_description || e.msg)) || String(e);
+  if(/Invalid login credentials/i.test(m)) return 'Username atau password salah.';
+  if(/already (been )?registered|User already/i.test(m)) return 'Username sudah dipakai. Pilih username lain.';
+  if(/Email not confirmed/i.test(m)) return 'Akun belum aktif. Admin perlu mematikan "Confirm email" di pengaturan Supabase.';
+  if(/rate limit|too many/i.test(m)) return 'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.';
+  if(/Password should be at least/i.test(m)) return 'Password minimal 6 karakter.';
+  if(/Failed to fetch|NetworkError|network|Load failed/i.test(m)) return 'Tidak dapat terhubung ke server. Periksa koneksi internet.';
+  if(/email/i.test(m) && /invalid/i.test(m)) return 'Server menolak format akun. Periksa EMAIL_DOMAIN di config.js. ('+m+')';
+  return m;
+}
+const authMsgEl = document.getElementById('authMsg');
+function setAuthMsg(t, cls){ authMsgEl.className = 'authMsg ' + (cls || ''); authMsgEl.textContent = t || ''; }
+
+function wireAuthUI(){
+  document.querySelectorAll('.authTabs button').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.authTabs button').forEach(x=>x.classList.toggle('on', x===b));
+      const daftar = b.dataset.at === 'daftar';
+      document.getElementById('loginForm').style.display  = daftar ? 'none' : '';
+      document.getElementById('signupForm').style.display = daftar ? '' : 'none';
+      document.getElementById('authTitle').textContent = daftar ? 'Daftar akun siswa' : 'Masuk untuk mulai belajar';
+      setAuthMsg('');
+    });
+  });
+  document.getElementById('loginForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    if(!sb) return;
+    const btn = document.getElementById('liBtn');
+    const u = document.getElementById('liUser').value, p = document.getElementById('liPass').value;
+    btn.disabled = true; setAuthMsg('Memeriksa akun…');
+    const { data, error } = await sb.auth.signInWithPassword({ email: toEmail(u), password: p });
+    btn.disabled = false;
+    if(error){ setAuthMsg(pesanError(error), 'err'); return; }
+    await enter(data.user);
+  });
+  document.getElementById('signupForm').addEventListener('submit', async e=>{
+    e.preventDefault();
+    if(!sb) return;
+    const nama  = document.getElementById('suNama').value.trim();
+    const kelas = document.getElementById('suKelas').value.trim();
+    const u     = document.getElementById('suUser').value.trim().toLowerCase();
+    const p     = document.getElementById('suPass').value;
+    if(!nama) return setAuthMsg('Nama lengkap wajib diisi.', 'err');
+    if(!USER_RE.test(u)) return setAuthMsg('Username 3–30 karakter: huruf kecil, angka, titik, atau garis bawah (tanpa spasi).', 'err');
+    if(p.length < 6) return setAuthMsg('Password minimal 6 karakter.', 'err');
+    const btn = document.getElementById('suBtn');
+    btn.disabled = true; setAuthMsg('Membuat akun…');
+    const { data, error } = await sb.auth.signUp({ email: toEmail(u), password: p, options:{ data:{ username:u, nama, kelas } } });
+    btn.disabled = false;
+    if(error){ setAuthMsg(pesanError(error), 'err'); return; }
+    if(!data.session){
+      setAuthMsg('Akun dibuat, tetapi belum aktif karena "Confirm email" masih menyala di Supabase. Minta admin mematikannya.', 'err');
+      return;
+    }
+    await enter(data.user);
+  });
+  document.getElementById('logoutBtn').addEventListener('click', async ()=>{
+    if(sb && me && !me.demo){ try{ await sb.auth.signOut(); }catch(e){} }
+    location.reload();
+  });
+  document.getElementById('demoBtn').addEventListener('click', ()=>{
+    me = { id:'demo', nama:'Pengguna Demo', username:'demo', kelas:'—', role:'siswa', demo:true };
+    applyRole();
+  });
+}
+
+async function bootAuth(){
+  wireAuthUI();
+  if(!SB_CONFIGURED){
+    document.getElementById('authSetup').style.display = '';
+    document.getElementById('authForms').style.display = 'none';
+    return;
+  }
+  setAuthMsg('Menghubungkan ke database…');
+  try{
+    ({ createClient: createClientFn } = await import(SUPABASE_CDN));
+  }catch(e){
+    setAuthMsg('Gagal memuat pustaka database. Periksa koneksi internet lalu muat ulang halaman.', 'err');
+    return;
+  }
+  sb = createClientFn(SB_URL, SB_KEY);
+  sb.auth.onAuthStateChange(ev=>{
+    if(ev === 'SIGNED_OUT' && me && !quietSignOut) location.reload();
+  });
+  const { data } = await sb.auth.getSession();
+  if(data && data.session) await enter(data.session.user);
+  else setAuthMsg('');
+}
+
+async function enter(user){
+  setAuthMsg('Memuat profil…');
+  const { data: prof, error } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+  if(error || !prof){
+    setAuthMsg('Profil akun tidak ditemukan. Pastikan file supabase_setup.sql sudah dijalankan. ' + (error ? pesanError(error) : ''), 'err');
+    quietSignOut = true;
+    try{ await sb.auth.signOut(); }catch(e){}
+    quietSignOut = false;
+    return;
+  }
+  me = prof;
+  applyRole();
+  if(isGuru()) loadGuru();
+  else await syncSiswa();
+}
+
+function applyRole(){
+  document.body.classList.add('authed');
+  document.body.classList.toggle('isGuru', isGuru());
+  document.getElementById('ucName').textContent = me.nama;
+  const rl = document.getElementById('ucRole');
+  rl.textContent = me.demo ? 'Demo' : isGuru() ? 'Guru' : 'Siswa';
+  rl.classList.toggle('guru', isGuru());
+  setAuthMsg('');
+  loadRef();
+  q3dShowBest();
+  refreshProgress();
+  setTimeout(resize, 60);
+}
+
+async function syncSiswa(){
+  if(!canSave()){ refreshProgress(); return; }
+  const [pr, rf] = await Promise.all([
+    sb.from('progres').select('data').eq('user_id', me.id).maybeSingle(),
+    sb.from('refleksi').select('jawaban').eq('user_id', me.id).maybeSingle(),
+  ]);
+  if(pr.data && pr.data.data) lsSet('progress', Object.assign({}, lsGet('progress', {}), pr.data.data));
+  if(rf.data && rf.data.jawaban){ lsSet('m4_ref', rf.data.jawaban); loadRef(); }
+  await loadMyHasil();
+}
+
+/* ============================================================
+   PANEL GURU
+============================================================ */
+const G = { profiles:[], hasil:[], nilai:{}, progres:{}, refleksi:{}, loaded:false };
+const gBody = document.getElementById('gBody');
+
+async function loadGuru(){
+  if(!isGuru() || !sb) return;
+  if(!G.loaded) gBody.innerHTML = '<tr class="emptyRow"><td colspan="8">Memuat data…</td></tr>';
+  const res = await Promise.all([
+    sb.from('profiles').select('*').order('nama'),
+    sb.from('hasil').select('*').order('created_at', { ascending:false }).limit(5000),
+    sb.from('nilai').select('*').limit(5000),
+    sb.from('progres').select('*'),
+    sb.from('refleksi').select('*'),
+  ]);
+  const bad = res.find(r => r.error);
+  if(bad){
+    gBody.innerHTML = '<tr class="emptyRow"><td colspan="8">⚠ Gagal memuat data: '+esc(pesanError(bad.error))+'</td></tr>';
+    return;
+  }
+  const [p, h, n, g, r] = res.map(x => x.data || []);
+  G.profiles = p.filter(x => x.role === 'siswa');
+  G.hasil = h;
+  G.nilai = Object.fromEntries(n.map(x => [x.hasil_id, x]));
+  G.progres = Object.fromEntries(g.map(x => [x.user_id, x.data]));
+  G.refleksi = Object.fromEntries(r.map(x => [x.user_id, x]));
+  G.loaded = true;
+  const ks = document.getElementById('gKelas'), cur = ks.value;
+  const kelasList = [...new Set(G.profiles.map(x => (x.kelas || '').trim()).filter(Boolean))].sort();
+  ks.innerHTML = '<option value="">Semua kelas</option>' + kelasList.map(k => '<option>'+esc(k)+'</option>').join('');
+  if(kelasList.includes(cur)) ks.value = cur;
+  renderGuru();
+}
+const gRows  = uid => G.hasil.filter(h => h.user_id === uid);
+const gLast  = (uid, j) => G.hasil.find(h => h.user_id === uid && h.jenis === j);
+const gNilai = r => (r && G.nilai[r.id]) ? +G.nilai[r.id].nilai : null;
+const fmtN   = v => (Math.round(v * 10) / 10).toString().replace('.', ',');
+function nBadge(v){
+  if(v == null) return '<span class="nBadge na">—</span>';
+  const c = v >= 80 ? 'hi' : v >= 70 ? 'md' : 'lo';
+  return '<span class="nBadge '+c+'">'+fmtN(v)+'</span>';
+}
+function gCell(uid, j){
+  const r = gLast(uid, j);
+  if(!r) return nBadge(null) + '<span class="sm">belum</span>';
+  const cnt = gRows(uid).filter(x => x.jenis === j).length;
+  return nBadge(gNilai(r)) + '<span class="sm">'+r.benar+' B · '+r.salah+' S'+(cnt > 1 ? ' · '+cnt+'× coba' : '')+'</span>';
+}
+function gFiltered(){
+  const q = document.getElementById('gSearch').value.trim().toLowerCase();
+  const k = document.getElementById('gKelas').value;
+  return G.profiles.filter(p =>
+    (!k || (p.kelas || '').trim() === k) &&
+    (!q || (p.nama + ' ' + p.username).toLowerCase().includes(q)));
+}
+function avg(arr){ const v = arr.filter(x => x != null); return v.length ? v.reduce((a,b)=>a+b, 0) / v.length : null; }
+function renderGuru(){
+  const list = gFiltered();
+  const nv = j => list.map(p => gNilai(gLast(p.id, j)));
+  const sudahEval = list.filter(p => gLast(p.id, 'evaluasi')).length;
+  const stat = (b, l) => '<div class="hBox"><b>'+b+'</b><span>'+l+'</span></div>';
+  const fa = v => v == null ? '—' : fmtN(v);
+  document.getElementById('gStats').innerHTML =
+    stat(list.length, 'Peserta didik') +
+    stat(sudahEval + '/' + list.length, 'Sudah evaluasi') +
+    stat(fa(avg(nv('pretest'))), 'Rata-rata Pre-Test') +
+    stat(fa(avg(nv('evaluasi'))), 'Rata-rata Evaluasi') +
+    stat(fa(avg(nv('lkpd'))), 'Rata-rata LKPD');
+  if(!list.length){
+    gBody.innerHTML = '<tr class="emptyRow"><td colspan="8">'+(G.profiles.length
+      ? 'Tidak ada siswa yang cocok dengan pencarian.'
+      : 'Belum ada akun siswa. Siswa dapat mendaftar sendiri di halaman login, atau tekan <b>＋ Tambah Siswa</b>.')+'</td></tr>';
+    return;
+  }
+  gBody.innerHTML = list.map(p => {
+    const pct = progressPct(progressDone(G.progres[p.id], gRows(p.id)));
+    return '<tr>'+
+      '<td><b>'+esc(p.nama)+'</b><span class="sm">@'+esc(p.username)+'</span></td>'+
+      '<td>'+esc(p.kelas || '—')+'</td>'+
+      '<td>'+gCell(p.id, 'pretest')+'</td>'+
+      '<td>'+gCell(p.id, 'evaluasi')+'</td>'+
+      '<td>'+gCell(p.id, 'lkpd')+'</td>'+
+      '<td><b>'+pct+'%</b><div class="progressbar" style="margin-top:.25rem;height:5px"><i style="width:'+pct+'%"></i></div></td>'+
+      '<td>'+(G.refleksi[p.id] ? '<span style="color:var(--ok)">✓ terisi</span>' : '<span class="sm">—</span>')+'</td>'+
+      '<td><div class="act">'+
+        '<button class="miniBtn" data-act="detail" data-id="'+p.id+'">Detail</button>'+
+        '<button class="miniBtn" data-act="reset" data-id="'+p.id+'">Reset PW</button>'+
+        '<button class="miniBtn danger" data-act="hapus" data-id="'+p.id+'">Hapus</button>'+
+      '</div></td></tr>';
+  }).join('');
+}
+gBody.addEventListener('click', e=>{
+  const b = e.target.closest('button[data-act]');
+  if(!b) return;
+  const id = b.dataset.id;
+  if(b.dataset.act === 'detail') openDetail(id);
+  if(b.dataset.act === 'reset') guruResetPw(id);
+  if(b.dataset.act === 'hapus') guruHapus(id);
+});
+document.getElementById('gSearch').addEventListener('input', renderGuru);
+document.getElementById('gKelas').addEventListener('change', renderGuru);
+document.getElementById('gReload').addEventListener('click', loadGuru);
+document.querySelectorAll('.tab[data-sek="guru"]').forEach(b => b.addEventListener('click', loadGuru));
+
+async function guruResetPw(id){
+  const p = G.profiles.find(x => x.id === id); if(!p) return;
+  const pw = prompt('Password baru untuk ' + p.nama + ' (@' + p.username + ')\nMinimal 6 karakter:');
+  if(pw == null) return;
+  if(pw.length < 6){ alert('Password minimal 6 karakter.'); return; }
+  const { error } = await sb.rpc('guru_reset_password', { p_user:id, p_password:pw });
+  alert(error ? 'Gagal: ' + pesanError(error) : 'Password ' + p.nama + ' berhasil diubah.\nUsername: ' + p.username + '\nPassword baru: ' + pw);
+}
+async function guruHapus(id){
+  const p = G.profiles.find(x => x.id === id); if(!p) return;
+  if(!confirm('Hapus akun ' + p.nama + ' (@' + p.username + ') beserta SEMUA hasil & nilainya?\nTindakan ini tidak dapat dibatalkan.')) return;
+  const { error } = await sb.rpc('guru_hapus_siswa', { p_user:id });
+  if(error){ alert('Gagal menghapus: ' + pesanError(error)); return; }
+  closeModal();
+  loadGuru();
+}
+
+/* ---- tambah siswa (oleh guru) ---- */
+const gAddBox = document.getElementById('gAddBox');
+document.getElementById('gAddBtn').addEventListener('click', ()=>{
+  gAddBox.style.display = gAddBox.style.display === 'none' ? '' : 'none';
+  if(gAddBox.style.display === '') document.getElementById('gaNama').focus();
+});
+document.getElementById('gaCancel').addEventListener('click', ()=>{ gAddBox.style.display = 'none'; });
+document.getElementById('gAddForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const msg = document.getElementById('gaMsg');
+  const say = (t, c) => { msg.className = 'authMsg ' + (c || ''); msg.textContent = t; };
+  const nama  = document.getElementById('gaNama').value.trim();
+  const kelas = document.getElementById('gaKelas').value.trim();
+  const u     = document.getElementById('gaUser').value.trim().toLowerCase();
+  const p     = document.getElementById('gaPass').value;
+  if(!USER_RE.test(u)) return say('Username 3–30 karakter: huruf kecil, angka, titik, atau garis bawah.', 'err');
+  if(p.length < 6) return say('Password minimal 6 karakter.', 'err');
+  const btn = document.getElementById('gaBtn');
+  btn.disabled = true; say('Membuat akun…');
+  // klien terpisah agar sesi login guru tidak tergantikan oleh akun baru
+  const tmp = createClientFn(SB_URL, SB_KEY, { auth:{ persistSession:false, autoRefreshToken:false,
+    detectSessionInUrl:false, storageKey:'sb-m4-tambah-siswa' } });
+  const { data, error } = await tmp.auth.signUp({ email: toEmail(u), password: p, options:{ data:{ username:u, nama, kelas } } });
+  btn.disabled = false;
+  if(error) return say(pesanError(error), 'err');
+  if(!data.session) say('Akun dibuat, tetapi belum aktif karena "Confirm email" masih menyala di Supabase.', 'err');
+  else say('✓ Akun ' + nama + ' dibuat. Username: ' + u + ' · Password: ' + p, 'ok');
+  document.getElementById('gaNama').value = '';
+  document.getElementById('gaUser').value = '';
+  document.getElementById('gaPass').value = '';
+  loadGuru();
+});
+
+/* ---- ekspor CSV (dibuka di Excel) ---- */
+document.getElementById('gCsv').addEventListener('click', ()=>{
+  const head = ['Nama','Username','Kelas','Pre-Test Benar','Pre-Test Salah','Nilai Pre-Test',
+    'Evaluasi Benar','Evaluasi Salah','Nilai Evaluasi','LKPD Benar (Akt.1-2)','LKPD Salah (Akt.1-2)','Nilai LKPD',
+    'Progres (%)','Refleksi','Terakhir Mengerjakan'];
+  const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+  const rows = gFiltered().map(p=>{
+    const c = j => { const r = gLast(p.id, j); return r ? [r.benar, r.salah, gNilai(r) == null ? '' : fmtN(gNilai(r))] : ['','','']; };
+    const lastAny = gRows(p.id)[0];
+    return [p.nama, p.username, p.kelas || '', ...c('pretest'), ...c('evaluasi'), ...c('lkpd'),
+      progressPct(progressDone(G.progres[p.id], gRows(p.id))), G.refleksi[p.id] ? 'Terisi' : '',
+      lastAny ? fmtWaktu(lastAny.created_at) : ''];
+  });
+  const csv = '﻿' + [head, ...rows].map(r => r.map(q).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type:'text/csv;charset=utf-8' }));
+  const kls = document.getElementById('gKelas').value;
+  a.download = 'nilai_motor4tak' + (kls ? '_' + kls.replace(/\s+/g, '-') : '') + '_' + new Date().toISOString().slice(0,10) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+});
+
+/* ---- detail siswa ---- */
+const modalBg = document.getElementById('modalBg'), modalCard = document.getElementById('modalCard');
+function closeModal(){ modalBg.classList.remove('show'); }
+modalBg.addEventListener('click', e=>{ if(e.target === modalBg) closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key === 'Escape') closeModal(); });
+
+function soalSalah(jawaban, bank){
+  if(!jawaban || !Array.isArray(jawaban.pilihan)) return '';
+  const no = bank.map((q, i) => jawaban.pilihan[i] === q.a ? null : (i + 1)).filter(Boolean);
+  return no.length ? 'Nomor soal salah / kosong: <b>' + no.join(', ') + '</b>' : '<span style="color:var(--ok)">Semua jawaban benar.</span>';
+}
+function openDetail(id){
+  const p = G.profiles.find(x => x.id === id); if(!p) return;
+  const rows = gRows(id);
+  const lastJ = j => rows.find(r => r.jenis === j);
+  const nl = r => r ? G.nilai[r.id] : null;
+  const d = progressDone(G.progres[id], rows);
+  const essay = t => '<div class="essay'+(t ? '' : ' empty')+'">'+(t ? esc(t) : 'tidak diisi')+'</div>';
+
+  const hist = rows.length ? '<div class="histList">' + rows.map(r =>
+    '<div class="histItem"><span><b>'+JENIS_LBL[r.jenis]+'</b> <span class="when">· '+fmtWaktu(r.created_at)+'</span></span>'+
+    '<span>'+r.benar+' benar · '+r.salah+' salah &nbsp;'+nBadge(gNilai(r))+'</span></div>').join('') + '</div>'
+    : '<div class="lkSub">Belum ada tes yang dikerjakan.</div>';
+
+  const ev = lastJ('evaluasi'), pre = lastJ('pretest'), lk = lastJ('lkpd');
+  let lkHtml = '<div class="lkSub">Belum mengerjakan LKPD.</div>';
+  const lkN = nl(lk);
+  if(lk && lkN && lkN.jawaban){
+    const j = lkN.jawaban;
+    lkHtml =
+      '<div class="lkSub">Nilai '+nBadge(+lkN.nilai)+' · Aktivitas 1: '+(lk.rincian && lk.rincian.a1 ? lk.rincian.a1.benar+'/8' : '—')+
+      ' · Aktivitas 2: '+(lk.rincian && lk.rincian.a2 ? lk.rincian.a2.benar+'/4' : '—')+'</div>'+
+      '<div class="qLbl">Aktivitas 1 — Identifikasi</div>'+
+      '<div class="essay">'+(j.iso || []).map(x => (x.benar ? '✓ ' : '✗ ') + esc(x.komponen) + ' → ' + esc(x.dipilih || '(kosong)')).join('\n')+'</div>'+
+      '<div class="qLbl">Aktivitas 2 — Urutan</div>'+
+      '<div class="essay">'+(j.urutan || []).map(x => esc(x.langkah) + ': ' + (x.urutan || '—')).join(' · ')+'</div>'+
+      '<div class="qLbl">Aktivitas 3 — Analisis kasus</div>' + essay(j.a3) +
+      '<div class="qLbl">Aktivitas 4 — Pengamatan simulasi</div>' +
+      (j.a4 || []).map((x, i) => '<div class="qLbl" style="font-weight:400">'+(i+1)+'. '+esc(x.q)+'</div>' + essay(x.a)).join('');
+  }
+  const rf = G.refleksi[id];
+  const rfHtml = rf ? REFQ.map((q, i) => '<div class="qLbl">'+(i+1)+'. '+esc(q)+'</div>' + essay((rf.jawaban || {})['r'+i])).join('')
+    : '<div class="lkSub">Belum mengisi refleksi.</div>';
+
+  modalCard.innerHTML =
+    '<h3><span>👤 '+esc(p.nama)+' <span class="muted" style="font-weight:400">@'+esc(p.username)+'</span></span>'+
+      '<button class="x" aria-label="Tutup" id="mdClose">×</button></h3>'+
+    '<div class="fRow" style="margin-top:.6rem">'+
+      '<label class="fld"><span>NAMA</span><input class="inputTxt" id="mdNama" value="'+esc(p.nama)+'"></label>'+
+      '<label class="fld"><span>KELAS</span><input class="inputTxt" id="mdKelas" value="'+esc(p.kelas || '')+'"></label>'+
+    '</div>'+
+    '<div class="ctlRow"><button class="miniBtn" id="mdSave">💾 Simpan nama/kelas</button>'+
+      '<button class="miniBtn" id="mdReset">🔑 Reset password</button>'+
+      '<button class="miniBtn danger" id="mdHapus">🗑 Hapus akun</button><span class="saveNote" id="mdMsg" style="margin:0"></span></div>'+
+    '<h4>Ringkasan nilai (percobaan terakhir)</h4>'+
+    '<div class="hasilGrid" style="margin-top:.3rem">'+
+      '<div class="hBox"><div style="font-size:1.2rem;margin-bottom:.35rem">'+nBadge(gNilai(pre))+'</div><span>Pre-Test'+(pre ? '<br>'+pre.benar+' B · '+pre.salah+' S' : '')+'</span></div>'+
+      '<div class="hBox"><div style="font-size:1.2rem;margin-bottom:.35rem">'+nBadge(gNilai(ev))+'</div><span>Evaluasi'+(ev ? '<br>'+ev.benar+' B · '+ev.salah+' S' : '')+'</span></div>'+
+      '<div class="hBox"><div style="font-size:1.2rem;margin-bottom:.35rem">'+nBadge(gNilai(lk))+'</div><span>LKPD'+(lk ? '<br>Akt.1–2: '+lk.benar+' B · '+lk.salah+' S' : '')+'</span></div>'+
+      '<div class="hBox"><b>'+progressPct(d)+'%</b><span>Progres</span></div>'+
+    '</div>'+
+    '<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.6rem">'+
+      STEP_LIST.map(([k,l])=>'<span class="chipMini" style="color:'+(d[k]?'var(--ok)':'var(--mut)')+'">'+(d[k]?'✓ ':'○ ')+l+'</span>').join('')+'</div>'+
+    (ev ? '<h4>Evaluasi terakhir</h4><div class="lkSub">'+soalSalah(nl(ev) && nl(ev).jawaban, QUIZ)+'</div>' : '')+
+    (pre ? '<h4>Pre-Test terakhir</h4><div class="lkSub">'+soalSalah(nl(pre) && nl(pre).jawaban, PRETEST)+'</div>' : '')+
+    '<h4>Jawaban LKPD terakhir</h4>' + lkHtml +
+    '<h4>Refleksi</h4>' + rfHtml +
+    '<h4>Riwayat pengerjaan</h4>' + hist;
+  modalBg.classList.add('show');
+  modalBg.scrollTop = 0;
+  document.getElementById('mdClose').onclick = closeModal;
+  document.getElementById('mdReset').onclick = () => guruResetPw(id);
+  document.getElementById('mdHapus').onclick = () => guruHapus(id);
+  document.getElementById('mdSave').onclick = async () => {
+    const m = document.getElementById('mdMsg');
+    const { error } = await sb.rpc('guru_ubah_siswa', { p_user:id,
+      p_nama: document.getElementById('mdNama').value, p_kelas: document.getElementById('mdKelas').value });
+    m.className = 'saveNote ' + (error ? 'err' : 'ok');
+    m.textContent = error ? 'Gagal: ' + pesanError(error) : '✓ Tersimpan';
+    if(!error){ await loadGuru(); }
+  };
+}
+
+/* mode terang / gelap */
+const themeBtn = document.getElementById('themeBtn');
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  if(themeBtn) themeBtn.textContent = theme === 'light' ? '🌙' : '☀️';
+}
+applyTheme(lsGet('tema', 'gelap'));
+if(themeBtn) themeBtn.addEventListener('click', ()=>{
+  const cur = document.documentElement.getAttribute('data-theme') || 'gelap';
+  const nxt = cur === 'light' ? 'gelap' : 'light';
+  lsSet('tema', nxt);
+  applyTheme(nxt);
+});
+
+/* bootstrap */
+loadRef();
+refreshProgress();
+bootAuth();
+
+if(initScene()){
+  resize();
+  animate();
+} else {
+  // sudah ditampilkan pesan webgl
+}
+
+</script>
+</body>
+</html>
