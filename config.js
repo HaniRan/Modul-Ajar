@@ -13,5 +13,5 @@ window.MODUL_CONFIG = {
 
   // Akhiran email internal untuk akun berbasis username (tidak perlu diubah).
   // Contoh: username "andi" → login sebagai andi@siswa.modul4tak.id
-  EMAIL_DOMAIN: 'siswa.modul4tak.id'
+  EMAIL_DOMAIN: 'siswa-sekolah.sch.id'
 };
